@@ -1,4 +1,4 @@
-export interface Color { id: number; code: string; name: string }
+export interface Color { id: number; code: string; name: string, englishName?: string }
 export interface Size { id: number; code: string; name: string }
 export interface Category { id: number; name: string; slug: string; thumbnail?: string, parentId?: number | null }
 export interface Brand { id: number; name: string; slug: string; logo_url?: string }

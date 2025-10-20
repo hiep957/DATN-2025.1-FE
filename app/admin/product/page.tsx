@@ -20,7 +20,7 @@ const MOCK_Brands: Brand[] = [
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000"; // change to your Nest host
 
 
-function buildQS(sp: Record<string, unknown>) {
+export function buildQS(sp: Record<string, unknown>) {
   const qs = new URLSearchParams();
   Object.entries(sp).forEach(([k, v]) => {
     if (v === undefined || v === null || v === "") return;
