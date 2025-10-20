@@ -31,11 +31,7 @@ import {
 } from "@tabler/icons-react"
 import { NavMain } from "./nav-main"
 import { NavSecondary } from "./nav-secondary"
-const user = {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "https://github.com/shadcn.png",
-}
+import { useRouter } from "next/navigation"
 const navSecondary = [
     {
         title: "Settings",
@@ -105,19 +101,21 @@ const items = [
     },
 ]
 export function AppSidebar() {
+    const router = useRouter()
     return (
         <Sidebar >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
+                            onClick={()=> router.push("/admin")}
                             asChild
                             className="data-[slot=sidebar-menu-button]:!p-1.5"
                         >
-                            <a href="#">
+                            <span>
                                 <IconInnerShadowTop className="!size-5" />
-                                <span className="text-base font-semibold">Acme Inc.</span>
-                            </a>
+                                <span className="text-base font-semibold">Shop quần áo</span>
+                            </span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
@@ -127,7 +125,7 @@ export function AppSidebar() {
                 <NavSecondary items={navSecondary} className="mt-auto" />
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={user} />
+                <NavUser />
             </SidebarFooter>
         </Sidebar>
     )

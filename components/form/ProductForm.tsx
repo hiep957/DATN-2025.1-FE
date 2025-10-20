@@ -1,11 +1,9 @@
-"use client";
+import { Product } from "@/lib/types/create-product";
+import { uploadMultipleFilesApi } from "@/lib/upload-image/upload";
+import { useEffect, useRef, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import z from "zod";
 
-import { useRef, useState } from "react";
-import { set, z } from "zod";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, X } from "lucide-react";
-// shadcn/ui
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -17,99 +15,65 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { uploadMultipleFilesApi } from "@/lib/upload-image/upload";
-import { createProduct } from "@/lib/api/auth";
+import { Loader2, X } from "lucide-react";
 import { toast } from "sonner";
+import { updateProduct } from "@/lib/api/auth";
+// --- DỮ LIỆU GIẢ (MOCK DATA) ---
+// Trong thực tế, bạn sẽ fetch dữ liệu này từ API
+const mockCategories = [{ id: 3, name: "Áo thun nam" }, { id: 8, name: "Quần short" }, { id: 10, name: "Áo Polo" }, { id: 6, name: "Áo Vest và Blazer" }, { id: 9, name: "Váy nữ" }];
+const mockBrands = [{ id: 5, name: "Adidas" }, { id: 6, name: "Davies" }];
+const mockColors = [{ id: 1, name: "Trắng", value: "#FFFFFF" }, { id: 2, name: "Đen", value: "#000000" }];
+const mockSizes = [{ id: 1, name: "S" }, { id: 2, name: "M" }];
 
-// --- mock data (thay bằng API fetch nếu cần) ---
-const mockCategories = [
-    { id: 3, name: "Áo thun nam" },
-    { id: 8, name: "Quần short" },
-    { id: 6, name: "Áo Vest và Blazer" },
-    { id: 9, name: "Váy nữ" },
-    { id: 10, name: "Áo Polo" }
-];
+// --- SCHEMA VALIDATION (ZOD) ---
+const variantSchema = z.object({
+    id: z.number().optional(), // ID của biến thể đã tồn tại để update
+    sku: z.string().min(3, { message: "SKU phải có ít nhất 3 ký tự." }),
+    price: z.coerce.number().min(0, { message: "Giá không hợp lệ." }),
+    compare_at_price: z.coerce.number().min(0).optional().nullable(),
+    quantity: z.coerce.number().int().min(0, { message: "Số lượng không hợp lệ." }),
+    colorId: z.coerce.number({ message: "Vui lòng chọn màu." }),
+    sizeId: z.coerce.number({ message: "Vui lòng chọn size." }),
+});
 
-const mockBrands = [
-    { id: 5, name: "Adidas" },
-    { id: 6, name: "Davies" },
-    { id: 7, name: "Nike" },
-];
+const imageSchema = z.object({
+    id: z.number().optional(), // ID của ảnh đã tồn tại để update
+    url: z.url("URL ảnh không hợp lệ"),
+});
 
-const mockColors = [
-    { id: 1, name: "Trắng", value: "#FFFFFF" },
-    { id: 2, name: "Đen", value: "#000000" },
-    { id: 4, name: "Xanh dương", value: "#0000FF" },
-    { id: 3, name: "Đỏ", value: "#FF0000" },
-];
-
-const mockSizes = [
-    { id: 1, name: "S" },
-    { id: 2, name: "M" },
-    { id: 3, name: "L" },
-    { id: 4, name: "XL" },
-];
-
-// --- schema ---
 const productFormSchema = z.object({
-    name: z.string().min(2, { message: "Tên sản phẩm ít nhất 2 ký tự" }).max(100, { message: "Tên sản phẩm tối đa 100 ký tự" }),
-    slug: z.string().min(2, { message: "Slug ít nhất 2 ký tự" }).max(100, { message: "Slug tối đa 100 ký tự" }),
+    name: z.string().min(2, { message: "Tên sản phẩm ít nhất 2 ký tự" }).max(100),
+    slug: z.string().min(2, { message: "Slug ít nhất 2 ký tự" }).max(100),
     description: z.string().optional(),
     categoryId: z.coerce.number({ message: "Vui lòng chọn danh mục." }),
     brandId: z.coerce.number().optional(),
-    specs: z
-        .string()
-        .optional()
-        .refine((val) => {
-            if (!val) return true;
-            try {
-                JSON.parse(val);
-                return true;
-            } catch {
-                return false;
-            }
-        }, { message: "Specs phải là một chuỗi JSON hợp lệ." })
-        .transform((val) => (val ? JSON.parse(val) : undefined)),
-    images: z.array(z.object({ url: z.url("URL ảnh không hợp lệ") })).min(1, { message: "Phải có ít nhất 1 ảnh." }),
-    image_colors: z.record(
-        z.string(),
-        z.object({ // Value bây giờ là một object
-            url: z.url("URL ảnh không hợp lệ") // Có thuộc tính 'url' là một URL
-        })
-    ).optional(),
-    variants: z.array(
-        z.object({
-            sku: z.string().min(3, { message: "SKU phải có ít nhất 3 ký tự." }),
-            price: z.coerce.number().min(0, { message: "Giá không hợp lệ." }),
-            compare_at_price: z.coerce.number().min(0).optional(),
-            quantity: z.coerce.number().int().min(0, { message: "Số lượng không hợp lệ." }),
-            colorId: z.coerce.number({ message: "Vui lòng chọn màu." }),
-            sizeId: z.coerce.number({ message: "Vui lòng chọn size." }),
-        })
-    ).min(1, { message: "Phải có ít nhất 1 biến thể." }),
+    specs: z.string().optional().refine((val) => {
+        if (!val) return true;
+        try { JSON.parse(val); return true; } catch { return false; }
+    }, { message: "Specs phải là một chuỗi JSON hợp lệ." }),
+    images: z.array(imageSchema).min(1, { message: "Phải có ít nhất 1 ảnh." }),
+    image_colors: z.record(z.string(), z.object({ url: z.url() })).optional(),
+    variants: z.array(variantSchema).min(1, { message: "Phải có ít nhất 1 biến thể." }),
 });
 
+// Types suy luận từ Zod
 type ProductFormInput = z.input<typeof productFormSchema>;
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-function toSlug(s: string) {
-    return s
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)+/g, "");
-}
+export default function ProductForm({ initialData, productId }: { initialData?: Product, productId: string }) {
 
-export default function AddProductPage() {
-    // --- thêm state để chọn màu đang active ---
     const [activeColorId, setActiveColorId] = useState<number | null>(null);
-    const [submitting, setSubmitting] = useState(false);
+    // Xác định chế độ hoạt động
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
+    const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
+    const [variantsToDelete, setVariantsToDelete] = useState<number[]>([]);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isUploading, setIsUploading] = useState(false); // --- THAY ĐỔI: State mới cho upload
-    // Dùng input type cho TFieldValues và output type cho TTransformedValues để tránh mismatch
     const form = useForm<ProductFormInput, any, ProductFormValues>({
-        resolver: zodResolver(productFormSchema),
+        // defaultValues bây giờ chỉ cần cho trường hợp TẠO MỚI
         defaultValues: {
             name: "",
             slug: "",
@@ -123,33 +87,46 @@ export default function AddProductPage() {
         },
         mode: "onSubmit",
     });
+    useEffect(() => {
+        if (initialData) {
+            // 1. Biến đổi dữ liệu từ Product -> ProductFormInput
+            const formValues = mapProductToFormInput(initialData);
 
-    // Field arrays
-    const {
-        fields: imageFields,
-        append: appendImage,
-        remove: removeImage,
-    } = useFieldArray({
-        control: form.control,
-        name: "images",
+            // 2. Dùng form.reset() để điền dữ liệu đã biến đổi vào form
+            form.reset(formValues);
+            console.log("Form watch:", form.watch());
+        }
+    }, [initialData, form]); // Thêm dependencies cho useEffect
+    const { fields: imageFields, append: appendImage, remove: removeImage } = useFieldArray({
+        control: form.control, name: "images"
+    });
+    const { fields: variantFields, append: appendVariant, remove: removeVariant } = useFieldArray({
+        control: form.control, name: "variants"
     });
 
-    const {
-        fields: variantFields,
-        append: appendVariant,
-        remove: removeVariant,
-    } = useFieldArray({
-        control: form.control,
-        name: "variants",
-    });
+    // Xử lý xóa ảnh/biến thể đã có từ DB
+    const handleRemoveImage = (index: number) => {
+        const images = form.getValues('images');
+        const image = images[index];
 
-    const handleAutoSlug = () => {
-        const name = form.getValues("name") || "";
-        const s = toSlug(name);
-        form.setValue("slug", s, { shouldValidate: true });
+        if (image?.id) {
+            setImagesToDelete(prev => [...prev, image.id!]);
+        }
+        removeImage(index);
     };
 
-    // Xử lý upload file
+    const handleRemoveVariant = (index: number) => {
+        const variants = form.getValues('variants');
+        const variant = variants[index];
+        console.log("Real variant data:", variant); // ID thực từ database
+        console.log("FieldArray variant:", variantFields[index]); // ID nội bộ của useFieldArray
+        if (variant?.id) {
+            setVariantsToDelete(prev => [...prev, variant.id!]);
+        }
+        removeVariant(index);
+    };
+
+
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) {
@@ -179,12 +156,8 @@ export default function AddProductPage() {
         }
     };
 
-
     // Lấy các màu xuất hiện trong variants (unique)
     const variantsWatch = form.watch("variants");
-    const products = form.getValues();
-    console.log("products", products);
-    console.log("variantsWatch", variantsWatch);
     const uniqueColorIds = Array.from(
         new Set(
             (variantsWatch ?? [])
@@ -229,7 +202,28 @@ export default function AddProductPage() {
     };
 
     const onSubmit = async (data: ProductFormValues) => {
-        console.log("Submitting:", data);
+        setIsSubmitting(true);
+
+        // Chuẩn bị payload
+        const transformedData = {
+            ...data,
+            // Transform specs từ string JSON về lại object
+            specs: data.specs ? JSON.parse(data.specs) : undefined
+        };
+
+        const finalPayload: any = { ...transformedData };
+
+        // Thêm các items cần xóa vào payload
+        finalPayload.images = [
+            ...(transformedData.images || []),
+            ...imagesToDelete.map(id => ({ id, _destroy: true }))
+        ];
+        finalPayload.variants = [
+            ...(transformedData.variants || []),
+            ...variantsToDelete.map(id => ({ id, _destroy: true }))
+        ];
+
+        console.log("Variants to delete:", variantsToDelete);
         // Chuẩn hoá khóa về number cho image_colors
         const normalizedImageColors =
             data.image_colors
@@ -237,44 +231,30 @@ export default function AddProductPage() {
                     Object.entries(data.image_colors).map(([k, v]) => [Number(k), v])
                 )
                 : undefined;
-
-        const payload = { ...data, image_colors: normalizedImageColors };
-        console.log(JSON.stringify(payload));
-        setSubmitting(true);
+        finalPayload.image_colors = normalizedImageColors;
         try {
-            // --- TRY: Chạy code có khả năng gây lỗi ở đây ---
-            const result = await createProduct(payload);
-
-            // API thành công và trả về dữ liệu
-            // Backend của bạn dường như trả về một object có cấu trúc { success: boolean, ... }
-            console.log("API call successful:", result);
-            if (result.statusCode === 201 || result.success) {
-                toast.success("Tạo sản phẩm thành công");
-                form.reset();
-                setActiveColorId(null);
-            } else {
-                // Trường hợp backend vẫn trả về status 2xx nhưng có success: false
-                toast.error(result.message || "Có lỗi xảy ra từ server.");
-            }
+            // Gọi API update
+            console.log("Vào hàm submit:");
+            const result = await updateProduct(productId, finalPayload);
+            console.log("Payload to be sent:", JSON.stringify(finalPayload));
+            toast.success("Cập nhật sản phẩm thành công!");
+            // Tùy chọn: có thể redirect hoặc fetch lại dữ liệu mới
+            // router.push("/admin/products");
 
         } catch (error: any) {
-            // --- CATCH: Bắt lỗi nếu promise bị reject ---
-            console.error("API call failed:", error);
-            // Lấy message lỗi từ response của Axios
-            const errorMessage = error.response?.data?.message || "Tạo sản phẩm thất bại";
+            const errorMessage = error.response?.data?.message || "Cập nhật sản phẩm thất bại.";
             toast.error(errorMessage);
-
         } finally {
-            // --- FINALLY: Luôn luôn chạy sau khi try hoặc catch kết thúc ---
-            setSubmitting(false);
+            setIsSubmitting(false);
         }
-    }
+        console.log("Form submitted with data:", data);
 
+    }
     return (
-        <div className="">
-            <h1 className="text-xl font-semibold mb-4">Thêm sản phẩm</h1>
+        <div className="p-4">
+            <h1 className="text-xl font-semibold mb-4">Chỉnh sửa sản phẩm</h1>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-10 ">
                         <div className="col-span-6 p-4 flex flex-col space-y-4 border rounded-xl mr-2">
                             <div>
@@ -287,11 +267,11 @@ export default function AddProductPage() {
                                             <FormControl>
                                                 <Input placeholder="Nhập tên sản phẩm" {...field} />
                                             </FormControl>
-                                            <div className="flex gap-2 mt-2">
+                                            {/* <div className="flex gap-2 mt-2">
                                                 <Button type="button" onClick={handleAutoSlug} variant="secondary">
                                                     Tạo slug từ tên
                                                 </Button>
-                                            </div>
+                                            </div> */}
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -429,7 +409,7 @@ export default function AddProductPage() {
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeImage(idx)}
+                                                    onClick={() => handleRemoveImage(idx)}
                                                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                     aria-label="Remove image"
                                                 >
@@ -597,8 +577,6 @@ export default function AddProductPage() {
                                 )}
                             </div>
 
-
-                            
                         </div>
                         <div className="col-span-10 my-6 border-t p-4">
                             <div>
@@ -772,7 +750,7 @@ export default function AddProductPage() {
                                             <Button
                                                 type="button"
                                                 variant="destructive"
-                                                onClick={() => removeVariant(idx)}
+                                                onClick={() => handleRemoveVariant(idx)}
                                                 disabled={variantFields.length === 1}
                                             >
                                                 Xoá biến thể #{idx + 1}
@@ -796,24 +774,60 @@ export default function AddProductPage() {
 
 
                         <div className="flex gap-3 p-4">
-                            <Button type="submit" disabled={submitting}>
-                                {submitting ? "Đang lưu..." : "Lưu sản phẩm"}
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? "Đang lưu..." : "Lưu sản phẩm"}
                             </Button>
                             <Button
                                 type="button"
                                 variant="secondary"
                                 onClick={() => form.reset()}
-                                disabled={submitting}
+                                disabled={isSubmitting}
                             >
                                 Reset
                             </Button>
                         </div>
                     </div>
-
                 </form>
-
             </Form>
-
         </div>
-    );
+    )
+}
+
+
+// Bạn có thể đặt hàm này trong cùng file component hoặc một file utils riêng
+// Chú ý: kiểu trả về là ProductFormInput, là kiểu dữ liệu đầu vào của form
+function mapProductToFormInput(product: Product): ProductFormInput {
+    return {
+        // --- Các trường giống nhau ---
+        name: product.name,
+        slug: product.slug,
+        description: product.description || "",
+        images: product.images, // Mảng images đã có { id, url }, tương thích với schema
+
+        // --- Biến đổi các trường khác nhau ---
+
+        // 1. Chuyển từ object lồng nhau thành ID
+        categoryId: product.category.id,
+        brandId: product.brand?.id, // Dùng optional chaining vì brand có thể không có
+
+        // 2. Chuyển specs từ object về lại chuỗi JSON cho textarea
+        specs: product.specs ? JSON.stringify(product.specs, null, 2) : "",
+
+        // 3. Biến đổi image_colors nếu cần (thường là key đã là string sẵn)
+        image_colors: product.image_colors ? Object.fromEntries(
+            Object.entries(product.image_colors).map(([key, value]) => [String(key), value])
+        ) : {},
+
+        // 4. "Làm phẳng" mảng variants
+        variants: product.variants.map(variant => ({
+            id: variant.id,
+            sku: variant.sku,
+            price: variant.price,
+            compare_at_price: variant.compare_at_price,
+            quantity: variant.quantity,
+            // Chuyển từ object lồng nhau thành ID
+            colorId: variant.color.id,
+            sizeId: variant.size.id,
+        })),
+    };
 }

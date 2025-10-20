@@ -17,3 +17,37 @@ export type CreateProductInput = {
         sizeId: number;
     }[];
 }
+
+
+export type Product = {
+    id: number;
+    name: string;
+    slug: string;
+    description?: string;
+    category: {
+        id: number;
+        name: string;
+        slug: string;
+        thumbnail: string;
+    };
+    brand?: {
+        id: number;
+        name: string;
+        slug: string;
+        logo_url: string;
+    },
+    is_published: boolean;
+    created: string;
+    specs?: Record<string, any>;
+    image_colors?: Record<string, any>;
+    images: { id: number; url: string }[];
+    variants: {
+        id: number;
+        sku: string;
+        price: number;
+        compare_at_price?: number;
+        quantity: number;
+        color: { id: number; code: string; name: string };
+        size: { id: number; code: string; name: string };
+    }[]
+}

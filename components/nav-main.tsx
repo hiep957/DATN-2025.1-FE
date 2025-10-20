@@ -10,13 +10,14 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 export function NavMain({
     items,
 }: {
     items: { title: string; url: string; icon?: Icon }[]
 }) {
+    const router = useRouter()
     const pathname = usePathname()
     function isActive(itemUrl: string, pathname: string) {
         // Chuẩn hoá bỏ slash cuối (nếu có)
@@ -39,10 +40,12 @@ export function NavMain({
                         <SidebarMenuButton
                             tooltip="Quick Create"
                             className="bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear"
-                            onClick={() => {/* mở modal/tạo nhanh */ }}
+                            onClick={() => {
+                                router.push("/admin/product/add-product")
+                             }}
                         >
                             <IconCirclePlusFilled />
-                            <span>Quick Create</span>
+                            <span>Create Product</span>
                         </SidebarMenuButton>
 
                         <Button
