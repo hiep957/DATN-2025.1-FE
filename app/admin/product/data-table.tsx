@@ -57,7 +57,7 @@ const renderSubComponent = ({ row }: { row: Row<Product> }) => {
                                 <TableRow key={v.id}>
                                     <TableCell>
                                         <Avatar className="h-12 w-12 rounded-md">
-                                            <AvatarImage src={imageUrl} alt={`${v.color.name} - ${v.size.name}`} />
+                                            <AvatarImage src={imageUrl} alt={`${v.color.name} - ${v.size.name}`} className="object-contain" />
                                             <AvatarFallback>{v.color.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                     </TableCell>

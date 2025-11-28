@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { set, z } from "zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +20,9 @@ import {
 import { uploadMultipleFilesApi } from "@/lib/upload-image/upload";
 import { createProduct } from "@/lib/api/auth";
 import { toast } from "sonner";
+import { Category, Color, Size } from "../type";
+import { getCategory, getColors, getSizes } from "@/lib/api/category";
+import { ca } from "date-fns/locale";
 
 // --- mock data (thay bằng API fetch nếu cần) ---
 const mockCategories = [
@@ -103,6 +106,9 @@ function toSlug(s: string) {
 
 export default function AddProductPage() {
     // --- thêm state để chọn màu đang active ---
+    const [category, setCategory] = useState<Category[] | null>(null);
+    const [size, setSize] = useState<Size[] | null>(null);
+    const [color, setColor] = useState<Color[] | null>(null);
     const [activeColorId, setActiveColorId] = useState<number | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -270,6 +276,25 @@ export default function AddProductPage() {
         }
     }
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [resCategory, resSize, resColor] = await Promise.all([getCategory(), getSizes(), getColors()]);
+                setCategory(resCategory.data.data);
+                setSize(Object.values(resSize.data));
+                setColor(Object.values(resColor.data));
+            } catch (error) {
+                console.error("Lỗi khi fetch dữ liệu:", error);
+            }
+        };
+        fetchData();
+    }, [])
+    console.log("category", category);
+    console.log("size", size);
+    console.log("color", color);
+
+
+
     return (
         <div className="">
             <h1 className="text-xl font-semibold mb-4">Thêm sản phẩm</h1>
@@ -349,7 +374,7 @@ export default function AddProductPage() {
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="none">— Không chọn —</SelectItem>
-                                                    {mockCategories.map((c) => (
+                                                    {category?.map((c) => (
                                                         <SelectItem key={c.id} value={String(c.id)}>
                                                             {c.name}
                                                         </SelectItem>
@@ -598,7 +623,7 @@ export default function AddProductPage() {
                             </div>
 
 
-                            
+
                         </div>
                         <div className="col-span-10 my-6 border-t p-4">
                             <div>
@@ -726,7 +751,7 @@ export default function AddProductPage() {
                                                                 <SelectValue placeholder="Chọn màu" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                {mockColors.map((c) => (
+                                                                {color?.map((c) => (
                                                                     <SelectItem key={c.id} value={String(c.id)}>
                                                                         {c.name}
                                                                     </SelectItem>
@@ -755,7 +780,7 @@ export default function AddProductPage() {
                                                                 <SelectValue placeholder="Chọn size" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                {mockSizes.map((s) => (
+                                                                {size?.map((s) => (
                                                                     <SelectItem key={s.id} value={String(s.id)}>
                                                                         {s.name}
                                                                     </SelectItem>

@@ -1,6 +1,8 @@
 import axios from "axios"
 import { toast } from "sonner"
 import api from "../axios"
+import { User } from "@/store/useAuthStore"
+
 
 export interface LoginResponse {
   accessToken: string
@@ -9,6 +11,12 @@ export interface LoginResponse {
     id: number
     name: string
     email: string
+    address: string
+    phoneNumber: string
+    birthday: string
+    gender: string
+    occupation: string
+    avatar: string
   },
   roles: string[]
 }
@@ -33,6 +41,11 @@ export async function loginUser(email: string, password: string): Promise<LoginR
 
 export const logoutUser = async (): Promise<any> => {
   const res = await api.post('/user/logout', {}, { withCredentials: true });
+  return res.data;
+}
+
+export const updateUserProfile = async(userData: User ) => {
+  const res = await api.patch('/user/update-profile', userData, { withCredentials: true });
   return res.data;
 }
 

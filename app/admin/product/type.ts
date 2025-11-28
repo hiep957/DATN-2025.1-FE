@@ -33,6 +33,8 @@ export interface Product {
 }
 
 
+
+
 // Server response from NestJS list endpoint
 export interface Paginated<T> {
     total: number;

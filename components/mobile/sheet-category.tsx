@@ -8,24 +8,41 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "../ui/accordion" // Đảm bảo đường dẫn này đúng với cấu trúc dự án của bạn
+import { useEffect, useState } from "react";
+import api from "@/lib/axios";
 
 interface SheetCategoryProps {
     openSheetCategory: boolean;
     setOpenSheetCategory?: (open: boolean) => void;
 }
 
-// Sửa lại đường dẫn ảnh: Bỏ "/public" vì Next.js phục vụ thư mục public từ root (/)
-export const fakeCategories: Category[] = [
-    { id: 1, name: "Nam", slug: "nam", thumbnail: "/category-nam.jpg" },
-    { id: 3, name: "Áo thun nam", slug: "ao-thun-nam", thumbnail: "/category-ao-thun-nam.jpg", parentId: 1 },
-    { id: 6, name: "Áo Vest và Blazer", slug: "ao-vest-blazer", thumbnail: "/category-nam.jpg", parentId: 1 },
-    { id: 2, name: "Nữ", slug: "nu", thumbnail: "/nu.jpg" },
-];
+
 
 export const SheetCategory = ({ openSheetCategory, setOpenSheetCategory }: SheetCategoryProps) => {
 
+    const [categories, setCategories] = useState<Category[]>([]);
+        const [loading, setLoading] = useState<boolean>(false);
+        useEffect((() => {
+            async function fetchCategories() {
+                try {
+                    setLoading(true);
+                    const response = await api.get('/category');
+                    console.log("Fetched categories:", response.data);
+                    // Xử lý dữ liệu nếu cần
+                    setCategories(response.data.data.data);
+                } catch (error) {
+                    console.error("Error fetching categories:", error);
+                } finally {
+                    setLoading(false);
+                }
+    
+            }
+            fetchCategories();
+        }), [])
+    
+
     // Lọc ra các danh mục cha (không có parentId)
-    const parentCategories = fakeCategories.filter(category => !category.parentId);
+    const parentCategories = categories.filter(category => !category.parentId);
 
     return (
         <Sheet open={openSheetCategory} onOpenChange={setOpenSheetCategory}>
@@ -49,7 +66,7 @@ export const SheetCategory = ({ openSheetCategory, setOpenSheetCategory }: Sheet
                 <Accordion type="multiple" className="w-full ">
                     {parentCategories.map(parent => {
                         // Tìm các danh mục con của danh mục cha này
-                        const childCategories = fakeCategories.filter(
+                        const childCategories = categories.filter(
                             child => child.parentId === parent.id
                         );
 
@@ -73,7 +90,7 @@ export const SheetCategory = ({ openSheetCategory, setOpenSheetCategory }: Sheet
                                         <div className="flex flex-col gap-2 pl-4">
                                             {childCategories.map(child => (
                                                 <a
-                                                    href={`/category/${child.slug}`} // Giả sử bạn muốn link đến trang danh mục con
+                                                    href={`products?category=${child.slug}`} // Giả sử bạn muốn link đến trang danh mục con
                                                     key={child.id}
                                                     className="flex items-center gap-4 p-2 rounded-md hover:bg-muted"
                                                 >

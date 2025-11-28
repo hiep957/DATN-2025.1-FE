@@ -7,7 +7,21 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CategoryFilter from "./components/CategoryFilter";
 import FilterSheet from "./components/SheetFilter";
+import { ProductList } from "./components/ProductList";
+import { Separator } from "@/components/ui/separator";
+import PaginationFilter from "./components/PaginationFilter";
 
+export interface ProductDataResponse {
+    data: Product[];
+    limit: number;
+    page: number;
+    total: number;
+    totalPages: number; 
+}
+
+export interface ProductListProps {
+    data: Product[];
+}
 
 
 export function buildQs(obj: Record<string, any>) {
@@ -24,6 +38,7 @@ export default function ProductClient({ categories, sizes, colors }: { categorie
     const router = useRouter();
     const pathname = usePathname();
     const sp = useSearchParams();
+    const [productData, setProductData] = useState<Product[] | null>(null);
     // console.log("Categories, Sizes, Colors in ProductClient:", { categories, sizes, colors });
     const sizesArray = Array.isArray(sizes) ? sizes : Object.values(sizes);
     const colorsArray = Array.isArray(colors) ? colors : Object.values(colors);
@@ -46,7 +61,7 @@ export default function ProductClient({ categories, sizes, colors }: { categorie
         router.replace(`${pathname}?${qs}`, { scroll: false });
     }, [router, pathname, sp]);
 
-    const [data, setData] = useState<Product | null>(null);
+    const [data, setData] = useState<ProductDataResponse| null>(null);
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState<string | null>(null);
 
@@ -60,9 +75,9 @@ export default function ProductClient({ categories, sizes, colors }: { categorie
         setErr(null);
         try {
             const qs = buildQs(params);
-            const res = await api.get<Product>(`/products?${qs}`, { signal: controller.signal });
+            const res = await api.get<any>(`/products?${qs}`, { signal: controller.signal });
             console.log("Fetched products:", res);
-            setData(res.data);
+            setData(res.data.data || []);
         } catch (e: any) {
             if (!axios.isCancel(e)) setErr(e?.message ?? "Fetch failed");
         } finally {
@@ -71,6 +86,9 @@ export default function ProductClient({ categories, sizes, colors }: { categorie
     }, [params]);
 
     useEffect(() => { fetchList(); }, [fetchList]);
+    if(!data) {
+        return <div>Loading...</div>;
+    }
     return (
         <div>
             <CategoryFilter
@@ -81,6 +99,14 @@ export default function ProductClient({ categories, sizes, colors }: { categorie
 
             <FilterSheet sizes={sizesArray} colors={colorsArray} />
 
+            <Separator className="my-4" />
+            <p className="font-medium ">Có {data.total} sản phẩm được tìm thấy</p>
+            <ProductList data={data.data} />
+            <PaginationFilter
+                currentPage={data.page}
+                totalPages={data.totalPages}
+                onPageChange={(page) => replaceParams({ page })}
+            />
         </div>
     )
 }

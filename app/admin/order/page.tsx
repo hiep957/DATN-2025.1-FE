@@ -1,25 +1,59 @@
-"use client"
 
-import api from "@/lib/axios";
-import { useEffect, useState } from "react";
+import Toolbar from "./_component/toolbar";
+import { Order } from "./type";
+import { ListResponse, Paginated } from "../product/type";
 
-export default function OrderPage() {
-    const [users, setUsers] = useState<any[]>([]);
-    // useEffect(() => {
-    //     api.get("/user/profile").then((r) => setUsers(r.data));
-    // }, []);
-    console.log(users);
+import DataTable from "./_component/data-table";
+
+
+
+const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000"; // change to your Nest host
+
+export function buildQS(sp: Record<string, unknown>) {
+    const qs = new URLSearchParams();
+    Object.entries(sp).forEach(([k, v]) => {
+        if (v === undefined || v === null || v === "") return;
+        qs.set(k, String(v));
+    });
+    return qs.toString();
+}
+
+export const dynamic = "force-dynamic"; // always SSR fresh
+
+export default async function OrderPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+
+    const sp = await searchParams;
+
+    console.log("Search params:", sp);
+
+    const page = Number(sp.page ?? 1);
+    const limit = Number(sp.limit ?? 10);
+
+    const query = buildQS({
+        page,
+        limit,
+        q: sp.q,
+        order_status: sp.order_status,
+        payment_status: sp.payment_status,
+        payment_method: sp.payment_method,
+        sortBy: sp.sortBy,
+        sortOrder: sp.sortOrder,
+    });
+    async function fetchJSON<T>(path: string): Promise<T> {
+        const res = await fetch(`${API}${path}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Failed ${path}: ${res.status}`);
+        return res.json();
+    }
+    // products
+    const orderRes = await fetchJSON<ListResponse<Order>>(`/payment/orders?${query}`);
+    console.log(orderRes)
+    const paged = orderRes.data as Paginated<Order>;
+    console.log("Paged orders:", paged);
     return (
         <div>
-            Order Page
 
-            <button
-                onClick={() => {
-                    api.get("/user/profile").then((r) => console.log(r));
-                }}
-            >
-                Test Profile
-            </button>
+            <Toolbar total={paged.total}/>
+            <DataTable data={paged.data} limit={limit} total={paged.total} page={page} totalPages={paged.totalPages} />
         </div>
     )
 }

@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Color, Size } from "@/app/admin/product/type";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 
 /** ===== Helpers ===== */
@@ -84,14 +85,14 @@ export default function FilterSheet({
     const [open, setOpen] = useState(false);
     const [selColors, setSelColors] = useState<Set<string>>(new Set());
     const [selSizes, setSelSizes] = useState<Set<string>>(new Set());
-    const [selPrices, setSelPrices] = useState<Set<string>>(new Set());
+    const [selPrices, setSelPrices] = useState<string | null>(null);
 
     // Đồng bộ lại khi mở
     useEffect(() => {
         if (open) {
             setSelColors(new Set(initial.colors));
             setSelSizes(new Set(initial.sizes));
-            setSelPrices(new Set(initial.prices));
+            setSelPrices(initial.prices.values().next().value ?? null);
         }
     }, [open, initial]);
 
@@ -122,7 +123,7 @@ export default function FilterSheet({
         const after = {
             colors: Array.from(selColors),
             sizes: Array.from(selSizes),
-            prices: Array.from(selPrices),
+            prices: selPrices ? [selPrices] : [],
         };
         const changed =
             before.colors.join(",") !== after.colors.join(",") ||
@@ -146,13 +147,13 @@ export default function FilterSheet({
     const onClearLocal = useCallback(() => {
         setSelColors(new Set());
         setSelSizes(new Set());
-        setSelPrices(new Set());
+        setSelPrices(null);
     }, []);
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="outline" className={cn("rounded-full", triggerClassName)}>
+                <Button variant="outline" className={cn("rounded-full mt-2", triggerClassName)}>
                     Bộ lọc
                 </Button>
             </SheetTrigger>
@@ -190,7 +191,7 @@ export default function FilterSheet({
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {PRICE_RANGES.map((p) => {
-                                const checked = selPrices.has(p.id);
+                                const checked = selPrices === p.id;
                                 return (
                                     <label
                                         key={p.id}
@@ -198,9 +199,9 @@ export default function FilterSheet({
                                             "flex items-center gap-3 rounded-xl border p-3 cursor-pointer select-none",
                                             checked ? "border-primary bg-primary/5" : "hover:bg-muted"
                                         )}
-                                        onClick={() => toggleSet(setSelPrices, p.id)}
+                                        onClick={() => setSelPrices(p.id)}
                                     >
-                                        <Checkbox checked={checked} onCheckedChange={() => toggleSet(setSelPrices, p.id)} />
+                                        <Checkbox checked={checked} onCheckedChange={() => setSelPrices(p.id)} />
                                         <span className="text-sm">{p.label}</span>
                                     </label>
                                 );

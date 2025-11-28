@@ -15,15 +15,14 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { Loader2, X } from "lucide-react";
+
 import { toast } from "sonner";
 import { updateProduct } from "@/lib/api/auth";
+import { Loader2, X } from "lucide-react";
+import { Category, Color, Size } from "@/app/admin/product/type";
+import { getCategory, getColors, getSizes } from "@/lib/api/category";
 // --- DỮ LIỆU GIẢ (MOCK DATA) ---
 // Trong thực tế, bạn sẽ fetch dữ liệu này từ API
-const mockCategories = [{ id: 3, name: "Áo thun nam" }, { id: 8, name: "Quần short" }, { id: 10, name: "Áo Polo" }, { id: 6, name: "Áo Vest và Blazer" }, { id: 9, name: "Váy nữ" }];
-const mockBrands = [{ id: 5, name: "Adidas" }, { id: 6, name: "Davies" }];
-const mockColors = [{ id: 1, name: "Trắng", value: "#FFFFFF" }, { id: 2, name: "Đen", value: "#000000" }];
-const mockSizes = [{ id: 1, name: "S" }, { id: 2, name: "M" }];
 
 // --- SCHEMA VALIDATION (ZOD) ---
 const variantSchema = z.object({
@@ -61,13 +60,28 @@ type ProductFormInput = z.input<typeof productFormSchema>;
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
 export default function ProductForm({ initialData, productId }: { initialData?: Product, productId: string }) {
-
+    console.log("Initial data in ProductForm:", initialData);
     const [activeColorId, setActiveColorId] = useState<number | null>(null);
     // Xác định chế độ hoạt động
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-
+    const [category, setCategory] = useState<Category[]>([]);
+    const [size, setSize] = useState<Size[]>([]);
+    const [color, setColor] = useState<Color[]>([]);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [resCategory, resSize, resColor] = await Promise.all([getCategory(), getSizes(), getColors()]);
+                setCategory(resCategory.data.data);
+                setSize(Object.values(resSize.data));
+                setColor(Object.values(resColor.data));
+            } catch (error) {
+                console.error("Lỗi khi fetch dữ liệu:", error);
+            }
+        };
+        fetchData();
+    }, []);
     const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
     const [variantsToDelete, setVariantsToDelete] = useState<number[]>([]);
 
@@ -78,7 +92,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
             name: "",
             slug: "",
             description: "",
-            categoryId: 0,
+            categoryId: undefined,
             brandId: undefined,
             specs: undefined,
             images: [],
@@ -88,15 +102,17 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
         mode: "onSubmit",
     });
     useEffect(() => {
-        if (initialData) {
-            // 1. Biến đổi dữ liệu từ Product -> ProductFormInput
-            const formValues = mapProductToFormInput(initialData);
+        if (!initialData) return;
+        if (!category.length) return; // 👈 chờ category load xong
 
-            // 2. Dùng form.reset() để điền dữ liệu đã biến đổi vào form
-            form.reset(formValues);
-            console.log("Form watch:", form.watch());
-        }
-    }, [initialData, form]); // Thêm dependencies cho useEffect
+        const formValues = mapProductToFormInput(initialData);
+        console.log("mapProductToFormInput:", formValues);
+
+        form.reset(formValues);
+
+        console.log("after reset categoryId:", form.getValues("categoryId"));
+    }, [initialData, category.length, form]);
+
     const { fields: imageFields, append: appendImage, remove: removeImage } = useFieldArray({
         control: form.control, name: "images"
     });
@@ -168,7 +184,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
 
     console.log("uniqueColorIds", uniqueColorIds);
     // Map: id -> object màu (từ mockColors)
-    const getColorById = (id: number) => mockColors.find(c => c.id === id);
+    const getColorById = (id: number) => color.find(c => c.id === id);
 
     // Lấy URL ảnh hiện tại của màu (nếu có)
     const getColorImageUrl = (colorId: number) => {
@@ -314,65 +330,42 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                             <FormField
                                 control={form.control}
                                 name="categoryId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Danh mục</FormLabel>
-                                        <FormControl>
+                                render={({ field }) => {
+                                    console.log("Field categoryId:", field.value);
+                                    console.log("category list:", category);
+                                    console.log(
+                                        "matched:",
+                                        category.find(c => String(c.id) === String(field.value))
+                                    );
+                                    return (
+                                        <FormItem>
+                                            <FormLabel>Danh mục</FormLabel>
                                             <Select
-                                                onValueChange={(v) =>
-                                                    field.onChange(v === "none" ? undefined : Number(v))
-                                                }
-                                                value={field.value ? String(field.value) : "none"}
+                                                value={field.value ? String(field.value) : ""}
+                                                onValueChange={(v) => field.onChange(v === "" ? undefined : Number(v))}
                                             >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Chọn danh mục" />
-                                                </SelectTrigger>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Chọn danh mục" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+
                                                 <SelectContent>
-                                                    <SelectItem value="none">— Không chọn —</SelectItem>
-                                                    {mockCategories.map((c) => (
+                                                    {category?.map((c) => (
                                                         <SelectItem key={c.id} value={String(c.id)}>
                                                             {c.name}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
+                                            <FormMessage />
+                                        </FormItem>
+                                    )
+                                }}
                             />
 
-                            {/* Thương hiệu (optional) */}
-                            <FormField
-                                control={form.control}
-                                name="brandId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Thương hiệu (tuỳ chọn)</FormLabel>
-                                        <FormControl>
-                                            <Select
-                                                onValueChange={(v) =>
-                                                    field.onChange(v === "none" ? undefined : Number(v))
-                                                }
-                                                value={field.value ? String(field.value) : "none"}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Chọn thương hiệu" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="none">— Không chọn —</SelectItem>
-                                                    {mockBrands.map((b) => (
-                                                        <SelectItem key={b.id} value={String(b.id)}>
-                                                            {b.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+
+
                             {/* Specs (JSON string, sẽ transform -> object) */}
                             <FormField
                                 control={form.control}
@@ -478,7 +471,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                                                 className={`relative w-9 h-9 rounded-full border transition
                       ${isActive ? "ring-2 ring-offset-2" : ""}`}
                                                 aria-label={`Màu ${c?.name ?? cid}`}
-                                                style={{ background: c?.value ?? "#e5e7eb" }}
+                                                style={{ background: c?.code ?? "#e5e7eb" }}
                                                 title={c?.name ?? String(cid)}
                                             >
                                                 {/* viền trắng cho màu tối */}
@@ -592,7 +585,11 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                                                 <FormItem>
                                                     <FormLabel>SKU</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="VD: TS-TRANG-S" {...field} />
+                                                        <Input placeholder="VD: TS-TRANG-S" {...field}
+                                                            onChange={(e) => field.onChange(e.target.value)} // để resolver zod coerce -> number
+                                                            onBlur={field.onBlur}
+                                                            name={field.name}
+                                                            ref={field.ref} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
@@ -704,7 +701,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                                                                 <SelectValue placeholder="Chọn màu" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                {mockColors.map((c) => (
+                                                                {color.map((c) => (
                                                                     <SelectItem key={c.id} value={String(c.id)}>
                                                                         {c.name}
                                                                     </SelectItem>
@@ -733,7 +730,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                                                                 <SelectValue placeholder="Chọn size" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                {mockSizes.map((s) => (
+                                                                {size?.map((s) => (
                                                                     <SelectItem key={s.id} value={String(s.id)}>
                                                                         {s.name}
                                                                     </SelectItem>
@@ -807,7 +804,7 @@ function mapProductToFormInput(product: Product): ProductFormInput {
         // --- Biến đổi các trường khác nhau ---
 
         // 1. Chuyển từ object lồng nhau thành ID
-        categoryId: product.category.id,
+        categoryId: product.category?.id,
         brandId: product.brand?.id, // Dùng optional chaining vì brand có thể không có
 
         // 2. Chuyển specs từ object về lại chuỗi JSON cho textarea

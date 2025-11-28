@@ -13,19 +13,12 @@ import {
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
 import { NavUser } from "./nav-use"
 import {
-    IconCamera,
     IconChartBar,
     IconDashboard,
-    IconDatabase,
-    IconFileAi,
-    IconFileDescription,
-    IconFileWord,
     IconFolder,
     IconHelp,
     IconInnerShadowTop,
     IconListDetails,
-    IconReport,
-    IconSearch,
     IconSettings,
     IconUsers,
 } from "@tabler/icons-react"
@@ -52,54 +45,32 @@ const navmain = [
         icon: IconDashboard,
     },
     {
-        title: "Product",
+        title: "Sản phẩm",
         url: "/admin/product",
         icon: IconListDetails,
     },
     {
-        title: "Order",
+        title: "Đơn hàng",
         url: "/admin/order",
         icon: IconChartBar,
     },
     {
-        title: "User",
+        title: "Người dùng",
         url: "/admin/user",
         icon: IconFolder,
     },
     {
-        title: "Team",
-        url: "/admin/team",
+        title: "Danh mục",
+        url: "/admin/category",
         icon: IconUsers,
     },
+    {
+        title: "Bình luận",
+        url: "/admin/review",
+        icon: IconUsers,
+    }
 ]
-// Menu items.
-const items = [
-    {
-        title: "Home",
-        url: "#",
-        icon: Home,
-    },
-    {
-        title: "Inbox",
-        url: "#",
-        icon: Inbox,
-    },
-    {
-        title: "Calendar",
-        url: "#",
-        icon: Calendar,
-    },
-    {
-        title: "Search",
-        url: "#",
-        icon: Search,
-    },
-    {
-        title: "Settings",
-        url: "#",
-        icon: Settings,
-    },
-]
+
 export function AppSidebar() {
     const router = useRouter()
     return (

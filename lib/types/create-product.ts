@@ -37,6 +37,7 @@ export type Product = {
         logo_url: string;
     },
     is_published: boolean;
+    sold: number;
     created: string;
     specs?: Record<string, any>;
     image_colors?: Record<string, any>;
@@ -44,10 +45,10 @@ export type Product = {
     variants: {
         id: number;
         sku: string;
-        price: number;
-        compare_at_price?: number;
+        price: string;
+        compare_at_price?: string;
         quantity: number;
-        color: { id: number; code: string; name: string };
+        color: { id: number; code: string; name: string, englishName?: string };
         size: { id: number; code: string; name: string };
     }[]
 }

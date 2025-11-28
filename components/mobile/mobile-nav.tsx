@@ -17,6 +17,7 @@ import { useState } from "react";
 import { logoutUser } from "@/lib/api/auth";
 import { toast } from "sonner";
 import { SheetCategory } from "./sheet-category";
+import { useCartStore } from "@/store/useCartStore";
 
 const navItems = [
   { href: "/", label: "Trang chủ", icon: Home },
@@ -32,6 +33,7 @@ export function MobileNav() {
     if (res.statusCode === 201) {
       logout();
       setIsSheetOpen(false);
+      useCartStore.getState().setCart([]);
       toast.success(res.messages || "Đăng xuất thành công");
       router.push('/');
     }
@@ -128,7 +130,7 @@ export function MobileNav() {
                 <DrawerItem
                   icon={Package}
                   label="Đơn hàng"
-                  onClick={() => handleNavigation("/orders")}
+                  onClick={() => handleNavigation("/profile/orders")}
                 />
                 <DrawerItem
                   icon={Settings}

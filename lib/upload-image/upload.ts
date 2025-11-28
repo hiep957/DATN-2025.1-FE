@@ -42,3 +42,30 @@ export const uploadMultipleFilesApi = async (files: File[]): Promise<string[]> =
         throw error;
     }
 };
+
+
+export const uploadSingleFileApi = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const response = await fetch('http://localhost:3000/upload/image', {
+            method: 'POST',
+            body: formData,
+        });
+        if (!response.ok) {
+            throw new Error('Upload request failed');
+        }
+        const result = await response.json();
+
+        if (result && result.data) {
+            const url = result.data.url;
+            console.log("Uploaded file URL:", url);
+            return url;
+        }
+        return '';
+    } catch (error) {
+
+        console.error("Error uploading file:", error);
+        throw error;
+    }
+};

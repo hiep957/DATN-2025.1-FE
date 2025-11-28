@@ -33,17 +33,20 @@ import { useAuthStore } from "@/store/useAuthStore"
 import { useEffect } from "react"
 import { logoutUser } from "@/lib/api/auth"
 import { useRouter } from "next/navigation"
+import { useCartStore } from "@/store/useCartStore"
 
 export function NavUser() {
     const router = useRouter();
     const { isMobile } = useSidebar()
     const { user } = useAuthStore();
     const logout = useAuthStore((state) => state.logout);
+    
     const handleLogout = async () => {
         console.log('logout');
         const res = await logoutUser();
         if (res.statusCode === 201) {
             logout();
+         
             router.push('/');
         }
     }

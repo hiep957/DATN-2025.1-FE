@@ -53,7 +53,7 @@ export const columns: ColumnDef<Product>[] = [
             return (
                 <div className="flex items-center gap-3">
                     <Avatar>
-                        <AvatarImage src={imageUrl} alt={p.name} />
+                        <AvatarImage src={imageUrl} alt={p.name} className="object-cover" />
                         <AvatarFallback>{p.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <span className="truncate  max-w-[300px] font-medium" title={p.name}>{p.name}</span>

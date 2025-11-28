@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { use, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/useAuthStore'
 import { loginUser } from '@/lib/api/auth'
@@ -13,6 +13,8 @@ import { FormInput } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useCartStore } from '@/store/useCartStore'
+import { getCart, mergeCart } from '@/lib/api/cart'
 // import { useAuthStore } from '@/store/useAuthStore'
 
 
@@ -32,7 +34,7 @@ const LoginPage = () => {
     const setUser = useAuthStore((state) => state.setUser)
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
-
+    // const { getState } = useCartStore();
 
     const form = useForm<LoginData>({
         resolver: zodResolver(loginSchema),
@@ -50,10 +52,26 @@ const LoginPage = () => {
                 id: data.user.id,
                 email: data.user.email,
                 username: data.user.username,
+                address: data.user.address,
+                phoneNumber: data.user.phoneNumber,
+                birthday: data.user.birthday,
+                gender: data.user.gender,
+                occupation: data.user.occupation,
+                avatar: data.user.avatar,
                 roles: data.roles  // Lưu roles vào trạng thái người dùng
             })
             toast.success('Đăng nhập thành công!')
-
+            // Xử lý hợp nhất giỏ hàng ở đây nếu cần
+            //get cart đầu tiên hoặc tạo cart
+            const getOrCreateCart = await getCart();
+            console.log("Giỏ hàng hiện tại của người dùng:", getOrCreateCart);
+            const itemsInCartGuest = useCartStore.getState().getForMergePayload();
+            console.log("Items in guest cart to merge:", itemsInCartGuest);
+            const dataCartServer = await mergeCart(itemsInCartGuest);
+            console.log("Cart sau khi hợp nhất:", dataCartServer.data.items);
+            useCartStore.getState().clearGuest();
+            useCartStore.getState().setServerMode(true);
+            useCartStore.getState().setCart(dataCartServer.data.items);
             // Redirect theo role
             if (data.roles.includes('ADMIN')) {
                 router.push('/admin')

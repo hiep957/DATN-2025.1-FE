@@ -53,7 +53,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     price_max: sp.price_max,
     created_from: sp.created_from,
     created_to: sp.created_to,
-    sort: sp.sort ?? "-created",
+    sort: sp.sort 
   });
 
 
