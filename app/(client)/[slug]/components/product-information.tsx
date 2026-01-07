@@ -29,6 +29,14 @@ export default function ProductInformation({ product }: { product: Product }) {
     console.log("Product Information Props:", product);
     const { isAuthenticated } = useAuthStore();
     const { addItemGuest } = useCartStore();
+    const [sold, setSold] = React.useState<number>(0);
+
+    React.useEffect(() => {
+        if (product.variants && product.variants.length > 0) {
+            const totalSold = product.variants.reduce((acc, variant) => acc + (variant.sold || 0), 0);
+            setSold(totalSold);
+        }
+    }, [product.variants]);
 
     // 1. Lấy biến thể mặc định
     const initialVariant = product.variants.length > 0 ? product.variants[0] : null;
@@ -135,7 +143,7 @@ export default function ProductInformation({ product }: { product: Product }) {
         <div className="flex flex-col">
             <p className="text-2xl font-bold">{product.name}</p>
             <p className="text-sm text-gray-500 mb-4">{product.slug}</p>
-
+            <p className="text-sm text-gray-600 mb-4">Đã bán: {sold}</p>
             {/* Hiển thị giá */}
             <div className="mb-4">
                 {selectedVariant?.compare_at_price && Number(selectedVariant.compare_at_price) > Number(selectedVariant.price) && (
@@ -195,29 +203,7 @@ export default function ProductInformation({ product }: { product: Product }) {
                 <p>Số lượng còn lại: {selectedVariant?.quantity ?? 0}</p>
             </div>
 
-            <Accordion
-                type="single"
-                collapsible
-                className="w-full"
-                defaultValue="item-1"
-            >
-                <AccordionItem value="item-1">
-                    <AccordionTrigger className="w-full py-4 text-left font-medium border-b">
-                        Mô tả sản phẩm
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-4 text-sm text-gray-700 whitespace-pre-line">
-                        {product.description || 'Không có mô tả cho sản phẩm này.'}
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-2">
-                    <AccordionTrigger className="w-full py-4 text-left font-medium border-b">
-                        Chi tiết sản phẩm
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-4 text-sm text-gray-700 whitespace-pre-line">
-                        {product.specs ? (typeof product.specs === 'string' ? JSON.parse(product.specs) : JSON.stringify(product.specs, null, 2)) : 'Không có chi tiết cho sản phẩm này.'}
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+           
         </div>
     )
 }

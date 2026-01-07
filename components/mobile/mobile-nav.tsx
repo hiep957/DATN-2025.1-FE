@@ -134,8 +134,8 @@ export function MobileNav() {
                 />
                 <DrawerItem
                   icon={Settings}
-                  label="Cài đặt"
-                  onClick={() => handleNavigation("/settings")}
+                  label="Thay đổi mật khẩu"
+                  onClick={() => handleNavigation("/profile/password")}
                 />
               </div>
 

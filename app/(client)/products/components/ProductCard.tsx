@@ -14,7 +14,7 @@ export function ProductCard({ product }: { product: ProductCardProps }) {
     const [selectedColorId, setSelectedColorId] = React.useState<number | null>(
         null
     );
-    
+
     const defaultUrl = product.imageUrl?.[0] ?? "";
     const currentUrl = React.useMemo(() => {
         if (selectedColorId == null) return defaultUrl;
@@ -26,7 +26,7 @@ export function ProductCard({ product }: { product: ProductCardProps }) {
         setSelectedColorId((prev) => (prev === id ? null : id));
     };
 
-    const onClick = (id: number)=> {
+    const onClick = (id: number) => {
         router.push(`${id}`);
     }
 
@@ -51,10 +51,10 @@ export function ProductCard({ product }: { product: ProductCardProps }) {
 
             {/* Thông tin */}
             <div className="p-3">
-                {product.brandName ? (
-                    <div className="text-xs text-muted-foreground">{product.brandName}</div>
-                ) : null}
-                <div className="mt-0.5 line-clamp-2 text-sm font-medium cursor-pointer" onClick={() => onClick(product.id ?? 0)}>
+                <div
+                    className="mt-0.5 text-sm font-medium leading-5 line-clamp-2 min-h-[40px] cursor-pointer"
+                    onClick={() => onClick(product.id ?? 0)}
+                >
                     {product.name}
                 </div>
                 <div className="mt-1 text-base font-semibold">

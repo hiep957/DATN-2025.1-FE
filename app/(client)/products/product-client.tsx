@@ -100,7 +100,7 @@ export default function ProductClient({ categories, sizes, colors }: { categorie
             <FilterSheet sizes={sizesArray} colors={colorsArray} />
 
             <Separator className="my-4" />
-            <p className="font-medium ">Có {data.total} sản phẩm được tìm thấy</p>
+            <p className="font-medium mb-4 ">Có {data.total} sản phẩm được tìm thấy</p>
             <ProductList data={data.data} />
             <PaginationFilter
                 currentPage={data.page}

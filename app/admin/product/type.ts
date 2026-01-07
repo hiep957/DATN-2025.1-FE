@@ -14,6 +14,7 @@ export interface Variant {
     quantity: number;
     color: Color;
     size: Size;
+    sold?: number;
 }
 
 
@@ -57,5 +58,5 @@ export const fakeCategories: Category[] = [
     { id: 3, name: "Áo thun nam", slug: "ao-thun-nam", thumbnail: "/public/ao-thun-nam.jpg", parentId: 1 },
     { id: 6, name: "Áo Vest và Blazer", slug: "ao-vest-blazer", thumbnail: "/public/ao-vest-blazer.jpg", parentId: 1 },
     { id: 2, name: "Nữ", slug: "nu", thumbnail: "/public/nu.jpg" },
-    
+
 ];

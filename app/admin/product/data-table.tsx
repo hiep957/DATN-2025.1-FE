@@ -20,14 +20,15 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Brand, Category, Product, Variant } from "./type";
+import { fetchCategories } from "../category/page";
+import { useEffect } from "react";
+import { ca } from "date-fns/locale";
 
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     pageCount: number;
-    categories: Category[];
-    brands: Brand[];
 }
 
 
@@ -65,7 +66,7 @@ const renderSubComponent = ({ row }: { row: Row<Product> }) => {
                                     <TableCell>{v.size.name}</TableCell>
                                     <TableCell>{formatCurrency(parseFloat(v.price))}</TableCell>
                                     <TableCell>{v.quantity}</TableCell>
-                                    <TableCell>0</TableCell>
+                                    <TableCell>{v.sold}</TableCell>
                                 </TableRow>
                             );
                         })}
@@ -101,11 +102,12 @@ function useUrlState() {
 }
 
 
-function Toolbar({ categories, brands }: { categories: Category[]; brands: Brand[] }) {
+function Toolbar({ categories }: { categories: Category[] | null }) {
     const { searchParams, set } = useUrlState();
     const [q, setQ] = React.useState(searchParams.get("q") ?? "");
     const [min, setMin] = React.useState(searchParams.get("price_min") ?? "");
     const [max, setMax] = React.useState(searchParams.get("price_max") ?? "");
+    const categoryValue = searchParams.get("category") ?? "all";
     const resetFilters = () => {
         setQ("");
         setMin("");
@@ -113,11 +115,15 @@ function Toolbar({ categories, brands }: { categories: Category[]; brands: Brand
         set({
             q: undefined,
             category: undefined,
+            price_min: undefined,
+            price_max: undefined,
+            is_published: undefined,
+            sortOrder: undefined,
+            limit: undefined,
             page: undefined,
-            brand:undefined
         });
+    };
 
-    }
 
     return (
         <div className="mb-4 grid grid-cols-2 gap-3">
@@ -130,29 +136,25 @@ function Toolbar({ categories, brands }: { categories: Category[]; brands: Brand
             <div className="span-col-1 flex justify-between gap-2">
                 <div className="">
                     <Label className="sr-only">Danh mục</Label>
-                    <Select defaultValue={searchParams.get("category") ?? ""} onValueChange={(v) => set({ category: v === "all" ? undefined : v })}>
-                        <SelectTrigger><SelectValue placeholder="Danh mục" /></SelectTrigger>
+                    <Select
+                        value={categoryValue}
+                        onValueChange={(v) => set({ category: v === "all" ? undefined : v, page: undefined })}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Danh mục" />
+                        </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all" >Tất cả danh mục</SelectItem>
-                            {categories.map((c) => (
-                                <SelectItem key={c.id} value={c.slug}>{c.name}</SelectItem>
+                            <SelectItem value="all">Tất cả danh mục</SelectItem>
+                            {categories?.map((c) => (
+                                <SelectItem key={c.id} value={c.slug}>
+                                    {c.name}
+                                </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 </div>
 
-                <div className="">
-                    <Label className="sr-only">Thương hiệu</Label>
-                    <Select defaultValue={searchParams.get("brand") ?? ""} onValueChange={(v) => set({ brand: v === "all" ? undefined : v })}>
-                        <SelectTrigger><SelectValue placeholder="Thương hiệu" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Tất cả thương hiệu</SelectItem>
-                            {brands.map((b) => (
-                                <SelectItem key={b.id} value={String(b?.slug)}>{b.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+
                 <div className="flex items-center gap-2">
                     <Label htmlFor="pub">Hiển thị</Label>
                     <Switch id="pub" checked={(searchParams.get("is_published") ?? "") === "true"}
@@ -164,7 +166,7 @@ function Toolbar({ categories, brands }: { categories: Category[]; brands: Brand
             <div className="md:col-span-1 flex">
                 <Input className="mr-2" placeholder="Giá từ" inputMode="numeric" value={min} onChange={(e) => setMin(e.target.value)}
                     onBlur={() => set({ price_min: min || undefined })} />
-        
+
                 <Input placeholder="đến" inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value)}
                     onBlur={() => set({ price_max: max || undefined })} />
                 {/* <Input type="date" defaultValue={searchParams.get("created_from") ?? ""}
@@ -173,13 +175,11 @@ function Toolbar({ categories, brands }: { categories: Category[]; brands: Brand
                     onBlur={(e) => set({ created_to: e.target.value || undefined })} /> */}
             </div>
             <div className="md:col-span-1 flex justify-between gap-2">
-                <Select defaultValue={searchParams.get("sort") ?? "-created"} onValueChange={(v) => set({ sort: v || undefined })}>
+                <Select defaultValue={searchParams.get("sortOrder") ?? "-created"} onValueChange={(v) => set({ sortOrder: v || undefined })}>
                     <SelectTrigger><SelectValue placeholder="Sắp xếp" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="-created">Mới nhất</SelectItem>
-                        <SelectItem value="created">Cũ nhất</SelectItem>
-                        <SelectItem value="name">Tên A→Z</SelectItem>
-                        <SelectItem value="-name">Tên Z→A</SelectItem>
+                        <SelectItem value="DESC">Mới nhất</SelectItem>
+                        <SelectItem value="ASC">Cũ nhất</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select defaultValue={String(Number(useSearchParams().get("limit") ?? 10))}
@@ -197,14 +197,26 @@ function Toolbar({ categories, brands }: { categories: Category[]; brands: Brand
     );
 }
 
-export function ProductDataTable<TData extends Product, TValue>({ columns, data, pageCount, categories, brands }: DataTableProps<TData, TValue>) {
+export function ProductDataTable<TData extends Product, TValue>({ columns, data, pageCount }: DataTableProps<TData, TValue>) {
     const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel(), getExpandedRowModel: getExpandedRowModel(), getRowId: (row) => row.id.toString(), getRowCanExpand: () => true });
     const { searchParams, set } = useUrlState();
     const page = Number(searchParams.get("page") ?? 1);
-
+    const [categories, setCategories] = React.useState<Category[] | null>(null)
+    const loadData = async () => {
+        console.log("load categories")
+        try {
+            const categories = await fetchCategories();
+            setCategories(categories);
+        } catch (error) {
+            setCategories([]);
+        }
+    };
+    useEffect(() => {
+        loadData();
+    }, []);
     return (
         <div className="overflow-x-auto">
-            <Toolbar categories={categories} brands={brands} />
+            <Toolbar categories={categories} />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>

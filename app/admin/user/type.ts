@@ -42,6 +42,6 @@ export const Roles = [
 
 
 export const sortOptions = [
-    { value: "createAt", label: "Thời gian tạo" },
+    { value: "createdAt", label: "Thời gian tạo" },
     { value: "updatedAt", label: "Thời gian chỉnh sửa" },
 ]

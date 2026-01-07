@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/carousel";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useMobile";
 
 export default function ImageGallery({
     mainImages,
@@ -26,8 +27,10 @@ export default function ImageGallery({
     const handleSelect = (index: number) => {
         setCurrent(index);
         mainCarousel.current?.scrollTo(index);
-        
+
     };
+
+    const isDesktop = useIsMobile();
 
     return (
         <div className="flex w-full gap-3">
@@ -70,7 +73,7 @@ export default function ImageGallery({
             </div>
 
             {/* Main Carousel */}
-            <div className="relative w-full" ref={mainImageRef}>
+            <div className="relative w-full"  ref={mainImageRef}>
                 <Carousel
                     setApi={(api) => {
                         mainCarousel.current = api;
@@ -78,12 +81,12 @@ export default function ImageGallery({
                     }}
                     className="w-full"
                 >
-                    <CarouselContent>
-                        {mainImages.map((img,i) => (
+                    <CarouselContent className="">
+                        {mainImages.map((img, i) => (
                             <CarouselItem key={img.id}>
-                                <Card className="border-0 shadow-none">
-                                    <CardContent className="flex items-center justify-center p-0 aspect-square">
-                                        <div className="relative w-full aspect-square rounded-lg overflow-hidden">
+                                <Card className="border-0 p-0 shadow-none">
+                                    <CardContent className="flex items-center justify-center px-0 py-0">
+                                        <div className={cn("relative w-full rounded-lg overflow-hidden", isDesktop ? "" : "aspect-square")}>
                                             <img
                                                 src={img.url}
                                                 alt="Product image"

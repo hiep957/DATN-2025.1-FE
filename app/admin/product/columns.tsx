@@ -30,7 +30,8 @@ const getProductSummary = (variants: Product["variants"]) => {
         ? formatCurrency(minPrice)
         : `${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
     const totalStock = variants.reduce((s, v) => s + v.quantity, 0);
-    return { priceRange, totalStock, totalSold: 0 };
+    const totalSold = variants.reduce((s, v) => s + (v.sold || 0), 0);
+    return { priceRange, totalStock, totalSold };
 };
 
 
@@ -79,7 +80,7 @@ export const columns: ColumnDef<Product>[] = [
     {
         id: "totalSold",
         header: "Tổng đã bán",
-        cell: () => <div>0</div>,
+        cell: ({ row }) => <div>{getProductSummary(row.original.variants).totalSold}</div>,
     },
     {
         id: "actions",

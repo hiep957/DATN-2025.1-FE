@@ -38,11 +38,24 @@ export async function loginUser(email: string, password: string): Promise<LoginR
   return data.data // { accessToken, user }
 }
 
+export async function registerUser(username: string, email: string,  password: string): Promise<any> {
+  const res = await fetch('http://localhost:3000/user/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+   
+    body: JSON.stringify({ username,  email, password }),
+  })
+  return res.json()
+}
+
+
 
 export const logoutUser = async (): Promise<any> => {
   const res = await api.post('/user/logout', {}, { withCredentials: true });
   return res.data;
 }
+
+
 
 export const updateUserProfile = async(userData: User ) => {
   const res = await api.patch('/user/update-profile', userData, { withCredentials: true });
@@ -69,4 +82,9 @@ export const fetchProductById = async (id: string): Promise<any> => {
 
 export const updateProduct = async (id: string, productData: any): Promise<any> => {
   return api.patch(`/products/update/${id}`, productData, { withCredentials: true }).then(res => res);
+}
+
+export const changeUserPassword = async (oldPassword: string, newPassword: string): Promise<any> => {
+  const res = await api.post('/user/change-password', { oldPassword, newPassword }, { withCredentials: true });
+  return res.data;
 }

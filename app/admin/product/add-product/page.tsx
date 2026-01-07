@@ -82,7 +82,6 @@ const productFormSchema = z.object({
     ).optional(),
     variants: z.array(
         z.object({
-            sku: z.string().min(3, { message: "SKU phải có ít nhất 3 ký tự." }),
             price: z.coerce.number().min(0, { message: "Giá không hợp lệ." }),
             compare_at_price: z.coerce.number().min(0).optional(),
             quantity: z.coerce.number().int().min(0, { message: "Số lượng không hợp lệ." }),
@@ -125,7 +124,7 @@ export default function AddProductPage() {
             specs: undefined,
             images: [],
             image_colors: {},          // ⬅️ thêm
-            variants: [{ sku: "", price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 }],
+            variants: [{ price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 }],
         },
         mode: "onSubmit",
     });
@@ -148,6 +147,23 @@ export default function AddProductPage() {
         control: form.control,
         name: "variants",
     });
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [resCategory, resSize, resColor] = await Promise.all([getCategory(), getSizes(), getColors()]);
+                setCategory(resCategory.data.data);
+                setSize(Object.values(resSize.data));
+                setColor(Object.values(resColor.data));
+            } catch (error) {
+                console.error("Lỗi khi fetch dữ liệu:", error);
+            }
+        };
+        fetchData();
+    }, [])
+    console.log("category", category);
+    console.log("size", size);
+    console.log("color", color);
 
     const handleAutoSlug = () => {
         const name = form.getValues("name") || "";
@@ -188,9 +204,6 @@ export default function AddProductPage() {
 
     // Lấy các màu xuất hiện trong variants (unique)
     const variantsWatch = form.watch("variants");
-    const products = form.getValues();
-    console.log("products", products);
-    console.log("variantsWatch", variantsWatch);
     const uniqueColorIds = Array.from(
         new Set(
             (variantsWatch ?? [])
@@ -201,7 +214,7 @@ export default function AddProductPage() {
 
     console.log("uniqueColorIds", uniqueColorIds);
     // Map: id -> object màu (từ mockColors)
-    const getColorById = (id: number) => mockColors.find(c => c.id === id);
+    const getColorById = (id: number) => color?.find(c => c.id === id);
 
     // Lấy URL ảnh hiện tại của màu (nếu có)
     const getColorImageUrl = (colorId: number) => {
@@ -276,22 +289,7 @@ export default function AddProductPage() {
         }
     }
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [resCategory, resSize, resColor] = await Promise.all([getCategory(), getSizes(), getColors()]);
-                setCategory(resCategory.data.data);
-                setSize(Object.values(resSize.data));
-                setColor(Object.values(resColor.data));
-            } catch (error) {
-                console.error("Lỗi khi fetch dữ liệu:", error);
-            }
-        };
-        fetchData();
-    }, [])
-    console.log("category", category);
-    console.log("size", size);
-    console.log("color", color);
+
 
 
 
@@ -300,7 +298,7 @@ export default function AddProductPage() {
             <h1 className="text-xl font-semibold mb-4">Thêm sản phẩm</h1>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <div className="grid grid-cols-1 md:grid-cols-10 ">
+                    <div className="grid grid-cols-1 md:grid-cols-10 items-start ">
                         <div className="col-span-6 p-4 flex flex-col space-y-4 border rounded-xl mr-2">
                             <div>
                                 <FormField
@@ -387,55 +385,6 @@ export default function AddProductPage() {
                                 )}
                             />
 
-                            {/* Thương hiệu (optional) */}
-                            <FormField
-                                control={form.control}
-                                name="brandId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Thương hiệu (tuỳ chọn)</FormLabel>
-                                        <FormControl>
-                                            <Select
-                                                onValueChange={(v) =>
-                                                    field.onChange(v === "none" ? undefined : Number(v))
-                                                }
-                                                value={field.value ? String(field.value) : "none"}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Chọn thương hiệu" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="none">— Không chọn —</SelectItem>
-                                                    {mockBrands.map((b) => (
-                                                        <SelectItem key={b.id} value={String(b.id)}>
-                                                            {b.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            {/* Specs (JSON string, sẽ transform -> object) */}
-                            <FormField
-                                control={form.control}
-                                name="specs"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Specs (JSON)</FormLabel>
-                                        <FormControl>
-                                            <Textarea
-                                                rows={5}
-                                                placeholder={`Ví dụ: {"material":"cotton","fit":"regular","care":["machine-wash","do-not-bleach"]}`}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
                         </div>
 
                         <div className="col-span-4 border p-4 rounded-lg">
@@ -523,7 +472,7 @@ export default function AddProductPage() {
                                                 className={`relative w-9 h-9 rounded-full border transition
                       ${isActive ? "ring-2 ring-offset-2" : ""}`}
                                                 aria-label={`Màu ${c?.name ?? cid}`}
-                                                style={{ background: c?.value ?? "#e5e7eb" }}
+                                                style={{ background: c?.code ?? "#e5e7eb" }}
                                                 title={c?.name ?? String(cid)}
                                             >
                                                 {/* viền trắng cho màu tối */}
@@ -574,11 +523,11 @@ export default function AddProductPage() {
 
                                             {/* Info + xoá */}
                                             <div className="flex flex-col gap-3">
-                                                <Input
+                                                {/* <Input
                                                     readOnly
                                                     value={getColorImageUrl(activeColorId)}
                                                     placeholder="URL ảnh sẽ hiển thị ở đây"
-                                                />
+                                                /> */}
                                                 <div className="flex gap-2">
                                                     <Button
                                                         type="button"
@@ -631,20 +580,7 @@ export default function AddProductPage() {
 
                                 {variantFields.map((v, idx) => (
                                     <div key={v.id} className="grid gap-3 md:grid-cols-6 mb-3">
-                                        {/* SKU */}
-                                        <FormField
-                                            control={form.control}
-                                            name={`variants.${idx}.sku`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>SKU</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="VD: TS-TRANG-S" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+
 
                                         {/* Price */}
                                         <FormField
@@ -810,7 +746,7 @@ export default function AddProductPage() {
                                     type="button"
                                     variant="secondary"
                                     onClick={() =>
-                                        appendVariant({ sku: "", price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 })
+                                        appendVariant({ price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 })
                                     }
                                 >
                                     + Thêm biến thể

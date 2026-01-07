@@ -7,9 +7,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-
-
-
 function toNumber(n?: string | number | null): number {
     if (typeof n === "number") return n;
     if (!n) return 0;
@@ -83,5 +80,24 @@ export function transformProductToCard(p: Product): ProductCardProps {
         imageUrl,
     };
 }
+
+
+export function postToCheckoutUrl(checkoutUrl: string, fields: Record<string, any>) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = checkoutUrl;
+
+  Object.entries(fields).forEach(([key, value]) => {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = key;
+    input.value = String(value ?? "");
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+}
+
 
 

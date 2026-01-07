@@ -16,7 +16,7 @@ type NavItem = {
 const accountItems: NavItem[] = [
     { label: "Thông tin cá nhân", href: "/profile", icon: User },
     { label: "Địa chỉ giao hàng", href: "/profile/addresses", icon: MapPin },
-    { label: "Bảo mật & mật khẩu", href: "/profile/security", icon: Shield },
+    { label: "Thay đổi mật khẩu", href: "/profile/password", icon: Shield },
 ];
 
 const shoppingItems: NavItem[] = [

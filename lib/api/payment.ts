@@ -45,6 +45,23 @@ export const createPaymentLink = async (orderId: string, amount: number) => {
     return response.data;
 }
 
+export const createPayment = async (type: 'COD' | 'SEPAY' | 'VNPAY', orderId: string, amount: number) => {
+    const response = await api.post("/payment/create-payment", {
+        type,
+        orderId,
+        amount
+    });
+    return response.data;
+}
+
+export const createSepayPaymentLink = async (orderId: string, amount: number) => {
+    const response = await api.post("/payment/create-sepay-payment-link", {
+        orderId,    
+        amount
+    });
+    return response.data;
+}
+
 export const processCod = async (orderId: string, userId: string) => {
     const response = await api.post("/payment/process-cod", {
         orderId,

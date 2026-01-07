@@ -12,12 +12,12 @@ import { AddCategoryDialog } from "./_component/add-category";
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000"; // change to your Nest host
 
 
-async function fetchCategories(): Promise<Category[]> {
+export async function fetchCategories(): Promise<Category[]> {
     const res = await api.get("/category");
     if (!res) throw new Error("Failed to fetch");
     return res.data.data.data;
 }
-export default function OrderPage() {
+export default function CategoryPage() {
 
     const [categories, setCategories] = React.useState<Category[] | null>(null);
     const [loading, setLoading] = React.useState(false);

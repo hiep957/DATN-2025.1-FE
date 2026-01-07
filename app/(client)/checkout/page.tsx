@@ -14,23 +14,32 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createOrder, CreateOrderPayload, createPaymentLink, processCod } from "@/lib/api/payment";
+import { createOrder, CreateOrderPayload, createPayment, createPaymentLink, createSepayPaymentLink, processCod } from "@/lib/api/payment";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 import { getCart } from "@/lib/api/cart";
-
+import { postToCheckoutUrl } from "@/lib/utils";
+import { set } from "date-fns";
+type Province = { code: number; name: string };
+type Ward = { code: number; name: string };
 const formCheckouSchema = z.object({
     customer_name: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
     customer_phone: z.string().min(10, "Số điện thoại không hợp lệ"),
-    customer_address: z.string().min(5, "Địa chỉ không hợp lệ"),
+    // customer_address: z.string().min(5, "Địa chỉ không hợp lệ"),
+    street: z.string().min(5, "Số nhà/tên đường không hợp lệ"),
+    ward: z.string().min(1, "Vui lòng chọn xã/phường"),
+    province: z.string().min(1, "Vui lòng chọn tỉnh/thành phố"),
     customer_email: z.string().email("Email không hợp lệ"), // ← sửa
     note: z.string().optional(),
-    payment_method: z.enum(["cod", "vnpay"]),
+    payment_method: z.enum(["cod", "vnpay", 'sepay']),
 })
 
 type FormCheckoutValues = z.infer<typeof formCheckouSchema>;
 
 export default function CheckoutPage() {
+    const [provinces, setProvinces] = useState<Province[]>([]);
+    const [wards, setWards] = useState<Ward[]>([]);
+
     const [loading, setLoading] = useState<boolean>(false);
     const user = useAuthStore(state => state.user);
     const form = useForm<FormCheckoutValues>({
@@ -38,13 +47,16 @@ export default function CheckoutPage() {
         defaultValues: {
             customer_name: "",
             customer_phone: "",
-            customer_address: "",
+            // customer_address: "",
+            street: "",
+            ward: "",
+            province: "",
             customer_email: "",
             note: "",
             payment_method: "cod",
         }
     })
-
+    const provinceValue = form.watch("province");
 
     const searchParams = useSearchParams();
     const allItems = useCartStore(state => state.items);
@@ -70,6 +82,39 @@ export default function CheckoutPage() {
         }
     }, [searchParams, allItems]);
 
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            const res = await fetch("https://provinces.open-api.vn/api/v2/p/");
+            const data = await res.json();
+            setProvinces(data);
+        };
+        fetchProvinces();
+    }, []);
+    useEffect(() => {
+        const fetchWards = async () => {
+            if (!provinceValue) {
+                setWards([]);
+                form.setValue("ward", "");
+                return;
+            }
+
+            const res = await fetch(
+                `https://provinces.open-api.vn/api/v2/p/${provinceValue}?depth=2`
+            );
+            const data = await res.json();
+
+            const wardList: Ward[] = data?.wards ?? [];
+            wardList.sort((a, b) => a.name.localeCompare(b.name, "vi"));
+
+            setWards(wardList);
+            form.setValue("ward", ""); // reset ward mỗi khi đổi tỉnh
+        };
+
+        fetchWards();
+    }, [provinceValue, form]);
+
+
+
     const onSubmit = async (data: FormCheckoutValues) => {
         setLoading(true);
         if (!user) {
@@ -85,12 +130,16 @@ export default function CheckoutPage() {
             productId: item.productId,
             link_image: item.productImage,
         })));
+        const provinceName = provinces.find(p => String(p.code) === data.province)?.name ?? "";
+        const wardName = wards.find(w => String(w.code) === data.ward)?.name ?? "";
+        const fullAddress = `${data.street}, ${wardName}, ${provinceName}`;
+
         const payload: CreateOrderPayload = {
             userId: Number(user?.id),
             customer_name: data.customer_name,
             customer_phone: data.customer_phone,
             customer_email: data.customer_email,
-            shipping_address: data.customer_address,
+            shipping_address: fullAddress,
             note: data.note,
             order_status: "pending",
             payment_method: data.payment_method,
@@ -98,7 +147,8 @@ export default function CheckoutPage() {
             subtotal: totalAmount,
             shipping_fee: 0,
             discount_amount: 0,
-            grand_total: Number(totalAmount),
+            grand_total: 2000,
+            // Number(totalAmount),
             orderItems: checkoutItems.map(item => ({
                 productVariantId: item.variant.id,
                 quantity: item.quantity,
@@ -111,30 +161,19 @@ export default function CheckoutPage() {
         const res = await createOrder(payload)
         console.log("Kết quả tạo đơn hàng:", res);
         if (res.statusCode === 201) {
-            //Gọi đến tạo link thanh toán VNPay
-            if (data.payment_method == "vnpay") {
-                const paymentLinkRes = await createPaymentLink(res.data.id, Number(totalAmount));
-                if (paymentLinkRes.statusCode === 201) {
-                    // Chuyển hướng người dùng đến link thanh toán VNPay
-                    window.location.href = paymentLinkRes.data.paymentUrl;
+            const resPayment = await createPayment(payload.payment_method.toUpperCase() as 'COD' | 'VNPAY' | 'SEPAY', res.data.id, payload.grand_total);
+            console.log("Kết quả tạo thanh toán:", resPayment);
+
+            if (resPayment.statusCode === 201) {
+                if (data.payment_method === "cod") {
+                    toast.success("Đặt hàng thành công! Vui lòng chờ nhân viên liên hệ xác nhận.");
+                    window.location.href = "/payment";
                     setLoading(false);
+
                 }
-                else {
+                else if (data.payment_method === "sepay") {
+                    postToCheckoutUrl(resPayment.data.checkoutUrl, resPayment.data.fields);
                     setLoading(false);
-                    toast.error(paymentLinkRes.message || "Tạo liên kết thanh toán thất bại")
-                }
-            }
-            if (data.payment_method == "cod") {
-                const paymentCodProcess = await processCod(res.data.id, String(user?.id));
-                if (paymentCodProcess.statusCode === 201) {
-                    toast.success("Đặt hàng thành công! Vui lòng chờ nhân viên liên hệ để xác nhận đơn hàng.")
-                    const cart = await getCart();
-                    useCartStore.getState().setCart(cart.data.items);
-                    setLoading(false);
-                }
-                else {
-                    setLoading(false);
-                    toast.error(paymentCodProcess.message || "Xử lý COD thất bại")
                 }
             }
         }
@@ -199,17 +238,74 @@ export default function CheckoutPage() {
                             />
                             <FormField
                                 control={form.control}
-                                name="customer_address"
+                                name="street"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Địa chỉ</FormLabel>
+                                        <FormLabel>Số nhà, tên đường</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Nhập địa chỉ của bạn" {...field} />
+                                            <Input placeholder="Ví dụ: 12 Nguyễn Trãi" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+
+                            <FormField
+                                control={form.control}
+                                name="province"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Tỉnh / Thành phố</FormLabel>
+                                        <Select value={field.value} onValueChange={field.onChange}>
+                                            <FormControl>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Chọn tỉnh/thành phố" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {provinces.map((p) => (
+                                                    <SelectItem key={p.code} value={String(p.code)}>
+                                                        {p.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="ward"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Xã / Phường</FormLabel>
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            disabled={!provinceValue || wards.length === 0}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder={!provinceValue ? "Chọn tỉnh trước" : "Chọn xã/phường"} />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {wards.map((w) => (
+                                                    <SelectItem key={w.code} value={String(w.code)}>
+                                                        {w.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
 
                             <FormField
                                 control={form.control}
@@ -246,6 +342,10 @@ export default function CheckoutPage() {
                                                 <div className="flex items-center space-x-2">
                                                     <RadioGroupItem value="cod" id="payment‑cod" />
                                                     <Label htmlFor="payment‑cod">Thanh toán khi nhận (COD)</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="sepay" id="payment‑sepay" />
+                                                    <Label htmlFor="payment‑sepay">Sepay (thanh toán online)</Label>
                                                 </div>
                                             </RadioGroup>
                                         </FormControl>

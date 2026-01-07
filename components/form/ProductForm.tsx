@@ -27,7 +27,6 @@ import { getCategory, getColors, getSizes } from "@/lib/api/category";
 // --- SCHEMA VALIDATION (ZOD) ---
 const variantSchema = z.object({
     id: z.number().optional(), // ID của biến thể đã tồn tại để update
-    sku: z.string().min(3, { message: "SKU phải có ít nhất 3 ký tự." }),
     price: z.coerce.number().min(0, { message: "Giá không hợp lệ." }),
     compare_at_price: z.coerce.number().min(0).optional().nullable(),
     quantity: z.coerce.number().int().min(0, { message: "Số lượng không hợp lệ." }),
@@ -97,7 +96,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
             specs: undefined,
             images: [],
             image_colors: {},          // ⬅️ thêm
-            variants: [{ sku: "", price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 }],
+            variants: [{ price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 }],
         },
         mode: "onSubmit",
     });
@@ -271,7 +270,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
             <h1 className="text-xl font-semibold mb-4">Chỉnh sửa sản phẩm</h1>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-10 ">
+                    <div className="grid grid-cols-1 md:grid-cols-10 items-start ">
                         <div className="col-span-6 p-4 flex flex-col space-y-4 border rounded-xl mr-2">
                             <div>
                                 <FormField
@@ -386,7 +385,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                             />
                         </div>
 
-                        <div className="col-span-4 border p-4 rounded-lg">
+                        <div className="col-span-4 border p-4 rounded-lg ">
 
                             <div>
                                 <FormLabel>Hình ảnh</FormLabel>
@@ -577,25 +576,8 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
 
                                 {variantFields.map((v, idx) => (
                                     <div key={v.id} className="grid gap-3 md:grid-cols-6 mb-3">
-                                        {/* SKU */}
-                                        <FormField
-                                            control={form.control}
-                                            name={`variants.${idx}.sku`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>SKU</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="VD: TS-TRANG-S" {...field}
-                                                            onChange={(e) => field.onChange(e.target.value)} // để resolver zod coerce -> number
-                                                            onBlur={field.onBlur}
-                                                            name={field.name}
-                                                            ref={field.ref} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
+                                       
+                                    
                                         {/* Price */}
                                         <FormField
                                             control={form.control}
@@ -760,7 +742,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                                     type="button"
                                     variant="secondary"
                                     onClick={() =>
-                                        appendVariant({ sku: "", price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 })
+                                        appendVariant({price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 })
                                     }
                                 >
                                     + Thêm biến thể
@@ -818,7 +800,6 @@ function mapProductToFormInput(product: Product): ProductFormInput {
         // 4. "Làm phẳng" mảng variants
         variants: product.variants.map(variant => ({
             id: variant.id,
-            sku: variant.sku,
             price: variant.price,
             compare_at_price: variant.compare_at_price,
             quantity: variant.quantity,

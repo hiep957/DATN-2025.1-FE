@@ -3,18 +3,18 @@ import { ProductDataTable } from "./data-table";
 import type { ListResponse, Paginated, Product, Category, Brand } from "./type";
 
 
-const MOCK_Categories: Category[] = [
-  { id: 3, name: "Áo thun nam", slug: "ao-thun-nam", thumbnail: "" },
-  { id: 6, name: "Áo Vest và Blazer", slug: "ao-vest-blazer", thumbnail: "" },
-  { id: 8, name: "Quần short", slug: "quan-short", thumbnail: "" },
-];
+// const MOCK_Categories: Category[] = [
+//   { id: 3, name: "Áo thun nam", slug: "ao-thun-nam", thumbnail: "" },
+//   { id: 6, name: "Áo Vest và Blazer", slug: "ao-vest-blazer", thumbnail: "" },
+//   { id: 8, name: "Quần short", slug: "quan-short", thumbnail: "" },
+// ];
 
-const MOCK_Brands: Brand[] = [
-  {id:5, name: "Adidas",slug:"adidas",logo_url:""},
-  {id:6, name: "Davies",slug:"davies",logo_url:""},
-  {id:7, name: "Nike",slug:"nike",logo_url:""},
+// const MOCK_Brands: Brand[] = [
+//   {id:5, name: "Adidas",slug:"adidas",logo_url:""},
+//   {id:6, name: "Davies",slug:"davies",logo_url:""},
+//   {id:7, name: "Nike",slug:"nike",logo_url:""},
 
-]
+// ]
 
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000"; // change to your Nest host
@@ -53,7 +53,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     price_max: sp.price_max,
     created_from: sp.created_from,
     created_to: sp.created_to,
-    sort: sp.sort 
+    sortOrder: sp.sortOrder,
   });
 
 
@@ -85,9 +85,6 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         columns={columns}
         data={paged.data}
         pageCount={paged.totalPages}
-        // categories={(cats.data?.data ?? []) as Category[]}
-        categories={MOCK_Categories}
-        brands={MOCK_Brands}
       />
     </div>
   );

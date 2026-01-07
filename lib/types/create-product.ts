@@ -44,11 +44,11 @@ export type Product = {
     images: { id: number; url: string }[];
     variants: {
         id: number;
-        sku: string;
         price: string;
         compare_at_price?: string;
         quantity: number;
         color: { id: number; code: string; name: string, englishName?: string };
         size: { id: number; code: string; name: string };
+        sold?: number;
     }[]
 }
