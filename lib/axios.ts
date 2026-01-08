@@ -4,18 +4,18 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
 
-export const BASE_URL = "http://localhost:3000";
+export const BASE_URL = "https://f25bd1d9cba5.ngrok-free.app";
 
 // Instance chính cho app
 export const api = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "https://f25bd1d9cba5.ngrok-free.app",
   withCredentials: true,          // nếu backend set refresh bằng cookie httpOnly
   timeout: 10000,
 });
 
 // Instance riêng chỉ để refresh, KHÔNG gắn interceptor để tránh vòng lặp
 const refreshApi = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "https://f25bd1d9cba5.ngrok-free.app",
   withCredentials: true,
   timeout: 10000,
 });
