@@ -56,7 +56,11 @@ export function RevenueChart() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/dashboard/revenue/all`)
+        const response = await fetch(`${BASE_URL}/dashboard/revenue/all`,{
+          headers:{
+            "ngrok-skip-browser-warning": "true",
+          }
+        })
         const json = await response.json()
         if (json.statusCode === 200) {
           setApiData(json.data)

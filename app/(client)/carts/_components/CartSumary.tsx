@@ -5,6 +5,8 @@ import { useState } from "react"
 import { CartItemProps } from "./CartArea"
 import { useCartStore } from "@/store/useCartStore"
 import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/store/useAuthStore"
+import { toast } from "sonner"
 
 type CartSummaryProps = {
     selectedVariantIds: string[]
@@ -20,7 +22,12 @@ export default function CartSummary({
     allCount,
 }: CartSummaryProps) {
     const router = useRouter();
+    const {isAuthenticated} = useAuthStore();
     const handleCheckoutPage = () => {
+        if (!isAuthenticated) {
+            toast.error("Vui lòng đăng nhập để tiếp tục thanh toán.");
+            return;
+        }
         if (selectedVariantIds.length === 0) return;
         const params = new URLSearchParams();
         // 2. Thêm mảng ID vào (nối bằng dấu phẩy)

@@ -77,8 +77,16 @@ export default function DashboardPieRow() {
     const fetchData = async () => {
       try {
         const [statusRes, categoryRes] = await Promise.all([
-          fetch(`${BASE_URL}/dashboard/orders/status-count`),
-          fetch(`${BASE_URL}/dashboard/categories/product-counts`),
+          fetch(`${BASE_URL}/dashboard/orders/status-count`,{
+            headers:{
+              "ngrok-skip-browser-warning": "true",
+            }
+          }),
+          fetch(`${BASE_URL}/dashboard/categories/product-counts`,{
+            headers:{
+              "ngrok-skip-browser-warning": "true",
+            }
+          }),
         ]);
 
         const statusJson = await statusRes.json();

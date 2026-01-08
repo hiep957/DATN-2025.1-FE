@@ -1,3 +1,4 @@
+import { Category } from "@/app/admin/product/type";
 import api from "../axios";
 
 export type CreateCategoryPayload = {
@@ -40,4 +41,10 @@ export const createSize = async (code: string, name: string) => {
 export const createColor = async (code: string, name: string, englishName: string) => {
     const response = await api.post("/category/create-color", { code, name, englishName });
     return response.data;
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+    const res = await api.get("/category");
+    if (!res) throw new Error("Failed to fetch");
+    return res.data.data.data;
 }

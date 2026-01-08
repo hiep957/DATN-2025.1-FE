@@ -2,7 +2,7 @@
 
 import { useCartStore } from "@/store/useCartStore";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { CartItemProps } from "../carts/_components/CartArea";
 import z from "zod";
 import { useForm } from "react-hook-form";
@@ -35,8 +35,14 @@ const formCheckouSchema = z.object({
 })
 
 type FormCheckoutValues = z.infer<typeof formCheckouSchema>;
-
 export default function CheckoutPage() {
+    return (
+        <Suspense fallback={<div className="p-6">Đang tải thanh toán...</div>}>
+            <CheckoutInner />
+        </Suspense>
+    );
+}
+function CheckoutInner() {
     const [provinces, setProvinces] = useState<Province[]>([]);
     const [wards, setWards] = useState<Ward[]>([]);
 
@@ -183,11 +189,6 @@ export default function CheckoutPage() {
         }
 
     }
-
-
-
-
-
     return (
         <div className="grid lg:grid-cols-[minmax(0,1fr)_420px]">
             <div className="">

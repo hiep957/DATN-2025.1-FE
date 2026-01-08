@@ -6,12 +6,9 @@ import Toolbar from "./_component/toolbar";
 import ListReview from "./_component/list-review";
 
 
-
-
-
 import { BASE_URL } from "@/lib/axios";
 
-export function buildQS(sp: Record<string, unknown>) {
+function buildQS(sp: Record<string, unknown>) {
     const qs = new URLSearchParams();
     Object.entries(sp).forEach(([k, v]) => {
         if (v === undefined || v === null || v === "") return;

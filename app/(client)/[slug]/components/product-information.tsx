@@ -199,7 +199,6 @@ export default function ProductInformation({ product }: { product: Product }) {
 
             {/* Thông tin thêm (SKU, số lượng) */}
             <div className="mt-6 text-sm text-gray-600">
-                <p>SKU: {selectedVariant?.sku ?? 'N/A'}</p>
                 <p>Số lượng còn lại: {selectedVariant?.quantity ?? 0}</p>
             </div>
 

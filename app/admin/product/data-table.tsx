@@ -20,9 +20,9 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Brand, Category, Product, Variant } from "./type";
-import { fetchCategories } from "../category/page";
 import { useEffect } from "react";
 import { ca } from "date-fns/locale";
+import { fetchCategories } from "@/lib/api/category";
 
 
 interface DataTableProps<TData, TValue> {

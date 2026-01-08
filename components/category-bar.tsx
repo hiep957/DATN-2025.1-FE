@@ -19,26 +19,44 @@ import { Category } from "@/app/admin/product/type"
 import { useRouter } from "next/navigation"
 import api from "@/lib/axios"
 
-import useSWR from 'swr'
+import { BASE_URL } from "@/lib/axios"
 
 
-// 2. Định nghĩa một fetcher dùng chung với 'api' của bạn
-const fetcher = (url: string) => api.get(url).then(res => {
-    // Trả về chính xác data bạn cần (giống như trong setCategories)
-    return res.data.data.data;
-});
+
 
 
 export function CategoryBar() {
     const isMobile = useIsMobile()
     const router = useRouter();
-    // 3. Xóa bỏ useEffect, useState (categories), useState (loading)
-    // Chỉ cần dùng useSWR
-    const {
-        data: categories, // đổi tên 'data' thành 'categories'
-        error,
-        isLoading // useSWR cung cấp 'isLoading'
-    } = useSWR<Category[]>('/category', fetcher); // Dùng key là URL và hàm fetcher
+
+    const [categories, setCategories] = React.useState<Category[] | null>(null);
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [error, setError] = React.useState<Error | null>(null);
+
+    React.useEffect(() => {
+        const fetchCategories = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const res = await fetch(`${BASE_URL}/category`, {
+                    method: 'GET',
+                    headers:{
+                        "ngrok-skip-browser-warning": "true",
+                    }
+                });
+                const json = await res.json();
+                if (!res.ok) {
+                    throw new Error("Failed to fetch categories");
+                }
+                setCategories(json.data.data);
+            } catch (err) {
+                setError(err as Error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     // 4. Xử lý loading và error
     if (error) return <div>Lỗi khi tải danh mục...</div>;

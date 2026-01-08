@@ -1,14 +1,18 @@
 // lib/axios.ts
-"use client";
+
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
 
-export const BASE_URL = "https://f25bd1d9cba5.ngrok-free.app";
+export const BASE_URL = "https://f25bd1d9cba5.ngrok-free.app"; // Thay đổi thành URL backend của bạn
 
 // Instance chính cho app
 export const api = axios.create({
   baseURL: "https://f25bd1d9cba5.ngrok-free.app",
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+    "Accept": "application/json",
+  },
   withCredentials: true,          // nếu backend set refresh bằng cookie httpOnly
   timeout: 10000,
 });

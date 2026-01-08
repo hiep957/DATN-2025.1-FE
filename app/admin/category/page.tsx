@@ -1,22 +1,13 @@
 "use client";
-import { User } from "@/store/useAuthStore";
 import React, { useEffect } from "react";
 import { Category } from "../product/type";
 import api from "@/lib/axios";
 import DataTable from "./_component/data-table";
-
-import { Button } from "@/components/ui/button";
 import { AddCategoryDialog } from "./_component/add-category";
+import { fetchCategories } from "@/lib/api/category";
 
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000"; // change to your Nest host
 
-
-export async function fetchCategories(): Promise<Category[]> {
-    const res = await api.get("/category");
-    if (!res) throw new Error("Failed to fetch");
-    return res.data.data.data;
-}
 export default function CategoryPage() {
 
     const [categories, setCategories] = React.useState<Category[] | null>(null);

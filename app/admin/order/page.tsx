@@ -9,7 +9,7 @@ import DataTable from "./_component/data-table";
 import { BASE_URL } from "@/lib/axios";
 // change to your Nest host
 
-export function buildQS(sp: Record<string, unknown>) {
+function buildQS(sp: Record<string, unknown>) {
     const qs = new URLSearchParams();
     Object.entries(sp).forEach(([k, v]) => {
         if (v === undefined || v === null || v === "") return;

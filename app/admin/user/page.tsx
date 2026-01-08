@@ -10,7 +10,7 @@ import { columns } from "./_component/columns";
 
 import { BASE_URL } from "@/lib/axios";
 
-export function buildQS(sp: Record<string, unknown>) {
+function buildQS(sp: Record<string, unknown>) {
     const qs = new URLSearchParams();
     Object.entries(sp).forEach(([k, v]) => {
         if (v === undefined || v === null || v === "") return;
