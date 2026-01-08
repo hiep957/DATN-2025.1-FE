@@ -1,7 +1,7 @@
 import { Variant } from "@/app/admin/product/type";
 import api from "../axios"
 import { CartItemClient } from "@/store/useCartStore";
-
+import { BASE_URL } from "../axios";
 const getCart = async () => {
     const res = await api.post('carts/get-cart');
     return res.data;

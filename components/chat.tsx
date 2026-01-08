@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils"; // Hàm classNames của shadcn
-
+import { BASE_URL } from "@/lib/axios";
 type Message = {
     role: "user" | "bot";
     content: string;
@@ -44,7 +44,7 @@ export default function ChatWidget() {
         setMessages((prev) => [...prev, { role: "bot", content: "" }]);
 
         try {
-            const response = await fetch("http://localhost:3000/chat/ask", {
+            const response = await fetch(`${BASE_URL}/chat/ask`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ question: userMessage.content }),

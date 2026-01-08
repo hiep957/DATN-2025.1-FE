@@ -1,8 +1,8 @@
 import api from "../axios"
-
+import { BASE_URL } from "../axios";
 
 export const getProductbyId = async (id: string) => {
-    const res = await fetch(`http://localhost:3000/products/${id}`, {
+    const res = await fetch(`${BASE_URL}/products/${id}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
     });

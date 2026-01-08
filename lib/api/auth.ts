@@ -2,8 +2,7 @@ import axios from "axios"
 import { toast } from "sonner"
 import api from "../axios"
 import { User } from "@/store/useAuthStore"
-
-
+import { BASE_URL } from "../axios"
 export interface LoginResponse {
   accessToken: string
   user: {
@@ -22,7 +21,7 @@ export interface LoginResponse {
 }
 
 export async function loginUser(email: string, password: string): Promise<LoginResponse> {
-  const res = await fetch('http://localhost:3000/user/login', {
+  const res = await fetch(`${BASE_URL}/user/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include', // để nhận cookie từ backend
@@ -39,7 +38,7 @@ export async function loginUser(email: string, password: string): Promise<LoginR
 }
 
 export async function registerUser(username: string, email: string,  password: string): Promise<any> {
-  const res = await fetch('http://localhost:3000/user/register', {
+  const res = await fetch(`${BASE_URL}/user/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
    

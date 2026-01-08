@@ -3,22 +3,7 @@ import { ProductDataTable } from "./data-table";
 import type { ListResponse, Paginated, Product, Category, Brand } from "./type";
 
 
-// const MOCK_Categories: Category[] = [
-//   { id: 3, name: "Áo thun nam", slug: "ao-thun-nam", thumbnail: "" },
-//   { id: 6, name: "Áo Vest và Blazer", slug: "ao-vest-blazer", thumbnail: "" },
-//   { id: 8, name: "Quần short", slug: "quan-short", thumbnail: "" },
-// ];
-
-// const MOCK_Brands: Brand[] = [
-//   {id:5, name: "Adidas",slug:"adidas",logo_url:""},
-//   {id:6, name: "Davies",slug:"davies",logo_url:""},
-//   {id:7, name: "Nike",slug:"nike",logo_url:""},
-
-// ]
-
-
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000"; // change to your Nest host
-
+import { BASE_URL } from "@/lib/axios";
 
 export function buildQS(sp: Record<string, unknown>) {
   const qs = new URLSearchParams();
@@ -58,7 +43,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
 
   async function fetchJSON<T>(path: string): Promise<T> {
-    const res = await fetch(`${API}${path}`, { cache: "no-store" });
+    const res = await fetch(`${BASE_URL}${path}`, { cache: "no-store" });
     if (!res.ok) throw new Error(`Failed ${path}: ${res.status}`);
     return res.json();
   }

@@ -4,7 +4,15 @@ import ProductInformation from "./components/product-information";
 import { Product } from "@/lib/types/create-product";
 import ReviewProduct from "./components/review-product";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-
+import { transformProductToCard } from "@/lib/utils";
+import { ProductCard } from "../products/components/ProductCard";
+import { BASE_URL } from "@/lib/axios";
+async function getRecommendedProducts(categoryId: number): Promise<any> {
+    const res = await fetch(`${BASE_URL}/products/top-best-seller/${categoryId}`, { method: "GET" });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.message || "Failed to fetch recommended products");
+    return json.data ;
+}
 
 
 
@@ -17,6 +25,12 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
     if (!product) {
         return <div>Product not found</div>;
     }
+    const recommendedProducts = await getRecommendedProducts(product.category.id);
+    const converttoArray:Product[] = Object.values(recommendedProducts);
+    const productCards = converttoArray.map(transformProductToCard);
+    console.log("Recommended Products:", productCards);
+    //loại bỏ sản phẩm hiện tại khỏi danh sách đề xuất
+    const filteredProductCards = productCards.filter((p) => p.id !== product.id);
     return (
         <div>
             <div className="grid grid-cols-1 md:grid-cols-2     ">
@@ -54,6 +68,14 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
             <div className="mt-8 border-b">
                 <div className="sm:text-sm md:text-md font-medium">
                     Một số sản phẩm bạn có thể thích
+                </div>
+                {
+
+                }
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 md:mt-4">
+                    {filteredProductCards.map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                    ))}
                 </div>
             </div>
             <div className="mt-12">

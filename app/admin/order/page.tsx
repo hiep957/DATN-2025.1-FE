@@ -6,8 +6,8 @@ import { ListResponse, Paginated } from "../product/type";
 import DataTable from "./_component/data-table";
 
 
-
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000"; // change to your Nest host
+import { BASE_URL } from "@/lib/axios";
+// change to your Nest host
 
 export function buildQS(sp: Record<string, unknown>) {
     const qs = new URLSearchParams();
@@ -40,7 +40,7 @@ export default async function OrderPage({ searchParams }: { searchParams: Promis
         sortOrder: sp.sortOrder,
     });
     async function fetchJSON<T>(path: string): Promise<T> {
-        const res = await fetch(`${API}${path}`, { cache: "no-store" });
+        const res = await fetch(`${BASE_URL}${path}`, { cache: "no-store" });
         if (!res.ok) throw new Error(`Failed ${path}: ${res.status}`);
         return res.json();
     }

@@ -2,10 +2,10 @@
 import { ProductCard } from "@/app/(client)/products/components/ProductCard";
 import { Product } from "@/app/admin/product/type";
 import { transformProductToCard } from "@/lib/utils";
-
+import { BASE_URL } from "@/lib/axios";
 
 async function getAoThunNamProducts(): Promise<any> {
-    const res = await fetch("http://localhost:3000/products?category=ao-thun-nam&limit=4", {
+    const res = await fetch(`${BASE_URL}/products?category=ao-thun-nam&limit=4`, {
         method: 'GET',
     });
     const json = await res.json();

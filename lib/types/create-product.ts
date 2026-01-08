@@ -9,7 +9,6 @@ export type CreateProductInput = {
     image_colors?: Record<string, any>;
     images: { url: string }[];
     variants: {
-        sku: string;
         price: number;
         compare_at_price?: number;
         quantity: number;

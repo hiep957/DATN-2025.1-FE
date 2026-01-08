@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { ProductCarousel } from "./product-carousel"; // Giả sử component này nhận prop products là mảng
 import { Message } from "./type";
 import { useMemo, useState } from "react";
-
+import { BASE_URL } from "@/lib/axios";
 // Định nghĩa lại kiểu dữ liệu mà Carousel cần (dựa trên comment của bạn)
 interface CarouselProduct {
   id: number;
@@ -63,7 +63,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
       // 2. Dùng Promise.all để fetch tất cả các sản phẩm cùng lúc
       const fetchPromises = productIds.map(id => 
-        fetch(`http://localhost:3000/products/${id}`).then(res => res.json())
+        fetch(`${BASE_URL}/products/${id}`).then(res => res.json())
       );
 
       const responses = await Promise.all(fetchPromises);

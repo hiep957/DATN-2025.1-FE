@@ -8,7 +8,7 @@ import { ChatMessage } from "./chat-message";
 import { Message } from "./type";
 import api from "@/lib/axios";
 import { useAuthStore } from "@/store/useAuthStore";
-
+import { BASE_URL } from "@/lib/axios";
 
 // Giả sử bạn lấy userId từ Zustand store
 // import { useUserStore } from "@/store/user-store"; 
@@ -61,7 +61,7 @@ export default function ChatWindow({ onClose, userId }: ChatWindowProps) {
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
     try {
-      const response = await fetch("http://localhost:3000/chat/ask", {
+      const response = await fetch(`${BASE_URL}/chat/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user?.accessToken}` },
         body: JSON.stringify({ userId, question: userMsg.content }), // Gửi kèm userId

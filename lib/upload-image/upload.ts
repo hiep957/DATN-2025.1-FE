@@ -3,6 +3,7 @@
  * @param files Danh sách file người dùng chọn.
  * @returns Promise chứa một mảng các URL ảnh.
  */
+import { BASE_URL } from "@/lib/axios";
 export const uploadMultipleFilesApi = async (files: File[]): Promise<string[]> => {
     // 1. Tạo FormData
     const formData = new FormData();
@@ -13,7 +14,7 @@ export const uploadMultipleFilesApi = async (files: File[]): Promise<string[]> =
 
     try {
         // 2. Gọi API của bạn, thay thế '/api/upload' bằng endpoint thật
-        const response = await fetch('http://localhost:3000/upload/images', {
+        const response = await fetch(`${BASE_URL}/upload/images`, {
             method: 'POST',
             body: formData,
             // Lưu ý: không cần set header 'Content-Type', trình duyệt sẽ tự làm khi có FormData
@@ -48,7 +49,7 @@ export const uploadSingleFileApi = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
     try {
-        const response = await fetch('http://localhost:3000/upload/image', {
+        const response = await fetch(`${BASE_URL}/upload/image`, {
             method: 'POST',
             body: formData,
         });

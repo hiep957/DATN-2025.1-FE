@@ -22,36 +22,9 @@ import { createProduct } from "@/lib/api/auth";
 import { toast } from "sonner";
 import { Category, Color, Size } from "../type";
 import { getCategory, getColors, getSizes } from "@/lib/api/category";
-import { ca } from "date-fns/locale";
-
-// --- mock data (thay bằng API fetch nếu cần) ---
-const mockCategories = [
-    { id: 3, name: "Áo thun nam" },
-    { id: 8, name: "Quần short" },
-    { id: 6, name: "Áo Vest và Blazer" },
-    { id: 9, name: "Váy nữ" },
-    { id: 10, name: "Áo Polo" }
-];
-
-const mockBrands = [
-    { id: 5, name: "Adidas" },
-    { id: 6, name: "Davies" },
-    { id: 7, name: "Nike" },
-];
-
-const mockColors = [
-    { id: 1, name: "Trắng", value: "#FFFFFF" },
-    { id: 2, name: "Đen", value: "#000000" },
-    { id: 4, name: "Xanh dương", value: "#0000FF" },
-    { id: 3, name: "Đỏ", value: "#FF0000" },
-];
-
-const mockSizes = [
-    { id: 1, name: "S" },
-    { id: 2, name: "M" },
-    { id: 3, name: "L" },
-    { id: 4, name: "XL" },
-];
+import { ColorOption } from "./utils";
+import { AddSizeDialog } from "./_component/add-size";
+import { AddColorDialog } from "./_component/add-color";
 
 // --- schema ---
 const productFormSchema = z.object({
@@ -147,23 +120,20 @@ export default function AddProductPage() {
         control: form.control,
         name: "variants",
     });
-
+    const fetchData = async () => {
+        console.log("bị gọi")
+        try {
+            const [resCategory, resSize, resColor] = await Promise.all([getCategory(), getSizes(), getColors()]);
+            setCategory(resCategory.data.data);
+            setSize(Object.values(resSize.data));
+            setColor(Object.values(resColor.data));
+        } catch (error) {
+            console.error("Lỗi khi fetch dữ liệu:", error);
+        }
+    };
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [resCategory, resSize, resColor] = await Promise.all([getCategory(), getSizes(), getColors()]);
-                setCategory(resCategory.data.data);
-                setSize(Object.values(resSize.data));
-                setColor(Object.values(resColor.data));
-            } catch (error) {
-                console.error("Lỗi khi fetch dữ liệu:", error);
-            }
-        };
         fetchData();
     }, [])
-    console.log("category", category);
-    console.log("size", size);
-    console.log("color", color);
 
     const handleAutoSlug = () => {
         const name = form.getValues("name") || "";
@@ -513,6 +483,7 @@ export default function AddProductPage() {
                                                         src={getColorImageUrl(activeColorId)}
                                                         alt="Ảnh màu"
                                                         className="object-cover w-full h-full"
+
                                                     />
                                                 ) : (
                                                     <span className="text-sm text-muted-foreground">
@@ -675,30 +646,49 @@ export default function AddProductPage() {
                                         <FormField
                                             control={form.control}
                                             name={`variants.${idx}.colorId`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Màu</FormLabel>
-                                                    <FormControl>
+                                            render={({ field }) => {
+                                                const selectedColor = color?.find(
+                                                    (c) => c.id === field.value
+                                                );
+
+                                                return (
+                                                    <FormItem>
+                                                        <FormLabel>Màu</FormLabel>
+
                                                         <Select
-                                                            onValueChange={(v) => field.onChange(v === "" ? undefined : Number(v))}
                                                             value={field.value ? String(field.value) : ""}
+                                                            onValueChange={(v) =>
+                                                                field.onChange(v === "" ? undefined : Number(v))
+                                                            }
                                                         >
-                                                            <SelectTrigger className="w-full">
-                                                                <SelectValue placeholder="Chọn màu" />
-                                                            </SelectTrigger>
+                                                            <FormControl>
+                                                                <SelectTrigger className="w-full">
+                                                                    {selectedColor ? (
+                                                                        <ColorOption
+                                                                            name={selectedColor.name}
+                                                                            code={selectedColor.code}
+                                                                        />
+                                                                    ) : (
+                                                                        <SelectValue placeholder="Chọn màu" />
+                                                                    )}
+                                                                </SelectTrigger>
+                                                            </FormControl>
+
                                                             <SelectContent>
                                                                 {color?.map((c) => (
                                                                     <SelectItem key={c.id} value={String(c.id)}>
-                                                                        {c.name}
+                                                                        <ColorOption name={c.name} code={c.code} />
                                                                     </SelectItem>
                                                                 ))}
                                                             </SelectContent>
                                                         </Select>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
+
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                );
+                                            }}
                                         />
+
 
                                         {/* Size */}
                                         <FormField
@@ -751,6 +741,7 @@ export default function AddProductPage() {
                                 >
                                     + Thêm biến thể
                                 </Button>
+
                             </div>
                         </div>
 
@@ -768,6 +759,8 @@ export default function AddProductPage() {
                             >
                                 Reset
                             </Button>
+                            <AddSizeDialog onSuccess={fetchData}></AddSizeDialog>
+                            <AddColorDialog onSuccess={fetchData}></AddColorDialog>
                         </div>
                     </div>
 

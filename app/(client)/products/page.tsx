@@ -1,6 +1,6 @@
 
 import ProductClient from "./product-client";
-const BASE_URL = "http://localhost:3000";
+import { BASE_URL } from "@/lib/axios";
 const fetchSizes = async () => {
     const res = await fetch(`${BASE_URL}/products/sizes`, {
         method: 'GET',

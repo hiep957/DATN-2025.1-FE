@@ -31,3 +31,13 @@ export const getSizes = async () => {
     const response = await api.get("/products/sizes");
     return response.data;
 }
+
+export const createSize = async (code: string, name: string) => {
+    const response = await api.post("/category/create-size", { code, name });
+    return response.data;
+}
+
+export const createColor = async (code: string, name: string, englishName: string) => {
+    const response = await api.post("/category/create-color", { code, name, englishName });
+    return response.data;
+}

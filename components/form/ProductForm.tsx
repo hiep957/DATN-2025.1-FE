@@ -21,6 +21,7 @@ import { updateProduct } from "@/lib/api/auth";
 import { Loader2, X } from "lucide-react";
 import { Category, Color, Size } from "@/app/admin/product/type";
 import { getCategory, getColors, getSizes } from "@/lib/api/category";
+import { ColorOption } from "@/app/admin/product/add-product/utils";
 // --- DỮ LIỆU GIẢ (MOCK DATA) ---
 // Trong thực tế, bạn sẽ fetch dữ liệu này từ API
 
@@ -68,17 +69,17 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
     const [category, setCategory] = useState<Category[]>([]);
     const [size, setSize] = useState<Size[]>([]);
     const [color, setColor] = useState<Color[]>([]);
+    const fetchData = async () => {
+        try {
+            const [resCategory, resSize, resColor] = await Promise.all([getCategory(), getSizes(), getColors()]);
+            setCategory(resCategory.data.data);
+            setSize(Object.values(resSize.data));
+            setColor(Object.values(resColor.data));
+        } catch (error) {
+            console.error("Lỗi khi fetch dữ liệu:", error);
+        }
+    };
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [resCategory, resSize, resColor] = await Promise.all([getCategory(), getSizes(), getColors()]);
-                setCategory(resCategory.data.data);
-                setSize(Object.values(resSize.data));
-                setColor(Object.values(resColor.data));
-            } catch (error) {
-                console.error("Lỗi khi fetch dữ liệu:", error);
-            }
-        };
         fetchData();
     }, []);
     const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
@@ -576,8 +577,8 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
 
                                 {variantFields.map((v, idx) => (
                                     <div key={v.id} className="grid gap-3 md:grid-cols-6 mb-3">
-                                       
-                                    
+
+
                                         {/* Price */}
                                         <FormField
                                             control={form.control}
@@ -671,31 +672,48 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                                         <FormField
                                             control={form.control}
                                             name={`variants.${idx}.colorId`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Màu</FormLabel>
-                                                    <FormControl>
+                                            render={({ field }) => {
+                                                const selectedColor = color?.find(
+                                                    (c) => c.id === field.value
+                                                );
+
+                                                return (
+                                                    <FormItem>
+                                                        <FormLabel>Màu</FormLabel>
+
                                                         <Select
-                                                            onValueChange={(v) => field.onChange(v === "" ? undefined : Number(v))}
                                                             value={field.value ? String(field.value) : ""}
+                                                            onValueChange={(v) =>
+                                                                field.onChange(v === "" ? undefined : Number(v))
+                                                            }
                                                         >
-                                                            <SelectTrigger className="w-full">
-                                                                <SelectValue placeholder="Chọn màu" />
-                                                            </SelectTrigger>
+                                                            <FormControl>
+                                                                <SelectTrigger className="w-full">
+                                                                    {selectedColor ? (
+                                                                        <ColorOption
+                                                                            name={selectedColor.name}
+                                                                            code={selectedColor.code}
+                                                                        />
+                                                                    ) : (
+                                                                        <SelectValue placeholder="Chọn màu" />
+                                                                    )}
+                                                                </SelectTrigger>
+                                                            </FormControl>
+
                                                             <SelectContent>
-                                                                {color.map((c) => (
+                                                                {color?.map((c) => (
                                                                     <SelectItem key={c.id} value={String(c.id)}>
-                                                                        {c.name}
+                                                                        <ColorOption name={c.name} code={c.code} />
                                                                     </SelectItem>
                                                                 ))}
                                                             </SelectContent>
                                                         </Select>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
 
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
                                         {/* Size */}
                                         <FormField
                                             control={form.control}
@@ -742,7 +760,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                                     type="button"
                                     variant="secondary"
                                     onClick={() =>
-                                        appendVariant({price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 })
+                                        appendVariant({ price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 })
                                     }
                                 >
                                     + Thêm biến thể
@@ -787,7 +805,6 @@ function mapProductToFormInput(product: Product): ProductFormInput {
 
         // 1. Chuyển từ object lồng nhau thành ID
         categoryId: product.category?.id,
-        brandId: product.brand?.id, // Dùng optional chaining vì brand có thể không có
 
         // 2. Chuyển specs từ object về lại chuỗi JSON cho textarea
         specs: product.specs ? JSON.stringify(product.specs, null, 2) : "",

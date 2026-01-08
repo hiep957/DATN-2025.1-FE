@@ -1,15 +1,15 @@
 
 import { ListResponse, Paginated } from "../product/type";
 import { Review } from "@/app/(client)/[slug]/components/type";
-import DataTable from "../user/_component/data-table";
+
 import Toolbar from "./_component/toolbar";
 import ListReview from "./_component/list-review";
-import { Button } from "@/components/ui/button";
 
 
 
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000"; // change to your Nest host
+
+import { BASE_URL } from "@/lib/axios";
 
 export function buildQS(sp: Record<string, unknown>) {
     const qs = new URLSearchParams();
@@ -41,8 +41,8 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
         sortOrder: sp.sortOrder,
     });
     async function fetchJSON<T>(path: string): Promise<T> {
-        console.log("Path sang backend", `${API}${path}`)
-        const res = await fetch(`${API}${path}`, { cache: "no-store" });
+        console.log("Path sang backend", `${BASE_URL}${path}`)
+        const res = await fetch(`${BASE_URL}${path}`, { cache: "no-store" });
         if (!res.ok) throw new Error(`Failed ${path}: ${res.status}`);
         return res.json();
     }

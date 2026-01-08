@@ -8,7 +8,6 @@ export type ImageColors = Record<string | number, { url: string }>
 
 export interface Variant {
     id: number;
-    sku: string;
     price: string; // keep string to match API
     compare_at_price?: string; // keep string to match API
     quantity: number;
