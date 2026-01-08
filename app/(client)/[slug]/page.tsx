@@ -11,13 +11,17 @@ async function getRecommendedProducts(categoryId: number): Promise<any> {
     const res = await fetch(`${BASE_URL}/products/top-best-seller/${categoryId}`, { method: "GET" });
     const json = await res.json();
     if (!res.ok) throw new Error(json?.message || "Failed to fetch recommended products");
-    return json.data ;
+    return json.data;
 }
 
 
 
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
-    const { slug } = params;
+export default async function ProductDetailPage({
+    params,
+}: {
+    params: Promise<{ slug: string }>;
+}) {
+    const { slug } = await params;
     console.log("Fetching product detail for slug:", slug);
     const data = await getProductbyId(slug);
     console.log("Product Detail Data:", data);
@@ -26,7 +30,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         return <div>Product not found</div>;
     }
     const recommendedProducts = await getRecommendedProducts(product.category.id);
-    const converttoArray:Product[] = Object.values(recommendedProducts);
+    const converttoArray: Product[] = Object.values(recommendedProducts);
     const productCards = converttoArray.map(transformProductToCard);
     console.log("Recommended Products:", productCards);
     //loại bỏ sản phẩm hiện tại khỏi danh sách đề xuất
