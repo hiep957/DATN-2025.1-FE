@@ -1,13 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import Toolbar from "./_component/toolbar";
+import DataTable from "./_component/data-table";
 import { Order } from "./type";
 import { ListResponse, Paginated } from "../product/type";
-
-import DataTable from "./_component/data-table";
-
-
-import { BASE_URL } from "@/lib/axios";
-// change to your Nest host
+import api, { BASE_URL } from "@/lib/axios";
 
 function buildQS(sp: Record<string, unknown>) {
     const qs = new URLSearchParams();
@@ -18,42 +18,51 @@ function buildQS(sp: Record<string, unknown>) {
     return qs.toString();
 }
 
-export const dynamic = "force-dynamic"; // always SSR fresh
+export default function OrderPage() {
+    const searchParams = useSearchParams();
 
-export default async function OrderPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+    const page = Number(searchParams.get("page") ?? 1);
+    const limit = Number(searchParams.get("limit") ?? 10);
 
-    const sp = await searchParams;
+    const [data, setData] = useState<Paginated<Order> | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    console.log("Search params:", sp);
+    useEffect(() => {
+        const query = buildQS({
+            page,
+            limit,
+            q: searchParams.get("q"),
+            order_status: searchParams.get("order_status"),
+            payment_status: searchParams.get("payment_status"),
+            payment_method: searchParams.get("payment_method"),
+            sortBy: searchParams.get("sortBy"),
+            sortOrder: searchParams.get("sortOrder"),
+        });
 
-    const page = Number(sp.page ?? 1);
-    const limit = Number(sp.limit ?? 10);
+        async function fetchOrders() {
+            setLoading(true);
+            const res = await api.get(`${BASE_URL}/payment/orders?${query}`);
+            const json: ListResponse<Order> = res.data;
+            setData(json.data as Paginated<Order>);
+            setLoading(false);
+        }
 
-    const query = buildQS({
-        page,
-        limit,
-        q: sp.q,
-        order_status: sp.order_status,
-        payment_status: sp.payment_status,
-        payment_method: sp.payment_method,
-        sortBy: sp.sortBy,
-        sortOrder: sp.sortOrder,
-    });
-    async function fetchJSON<T>(path: string): Promise<T> {
-        const res = await fetch(`${BASE_URL}${path}`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`Failed ${path}: ${res.status}`);
-        return res.json();
-    }
-    // products
-    const orderRes = await fetchJSON<ListResponse<Order>>(`/payment/orders?${query}`);
-    console.log(orderRes)
-    const paged = orderRes.data as Paginated<Order>;
-    console.log("Paged orders:", paged);
+        fetchOrders();
+    }, [page, limit, searchParams]);
+
+    if (loading) return <div>Loading...</div>;
+    if (!data) return <div>No data</div>;
+
     return (
         <div>
-
-            <Toolbar total={paged.total}/>
-            <DataTable data={paged.data} limit={limit} total={paged.total} page={page} totalPages={paged.totalPages} />
+            <Toolbar total={data.total} />
+            <DataTable
+                data={data.data}
+                limit={limit}
+                total={data.total}
+                page={page}
+                totalPages={data.totalPages}
+            />
         </div>
-    )
+    );
 }

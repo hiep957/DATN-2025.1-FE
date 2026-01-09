@@ -1,9 +1,13 @@
-import { columns } from "./columns"; // ✅ make sure this matches the file name
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
+import { columns } from "./columns";
 import { ProductDataTable } from "./data-table";
-import type { ListResponse, Paginated, Product, Category, Brand } from "./type";
+import type { ListResponse, Paginated, Product, Category } from "./type";
 
-
-import { BASE_URL } from "@/lib/axios";
+import api from "@/lib/axios"; // khuyến nghị dùng axios instance (baseURL sẵn)
 
 function buildQS(sp: Record<string, unknown>) {
   const qs = new URLSearchParams();
@@ -14,63 +18,91 @@ function buildQS(sp: Record<string, unknown>) {
   return qs.toString();
 }
 
-export const dynamic = "force-dynamic"; // always SSR fresh
+export default function ProductsPage() {
+  const searchParams = useSearchParams();
+  const spString = searchParams.toString(); // ✅ stable dependency
 
-export default async function ProductsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  // 👇 await the async searchParams
-  const sp = await searchParams;
+  const page = Number(searchParams.get("page") ?? 1);
+  const limit = Number(searchParams.get("limit") ?? 10);
 
-  console.log("Search params:", sp);
+  const query = useMemo(() => {
+    return buildQS({
+      page,
+      limit,
+      q: searchParams.get("q"),
+      category: searchParams.get("category"),
+      brand: searchParams.get("brand"),
+      is_published: searchParams.get("is_published"),
+      price_min: searchParams.get("price_min"),
+      price_max: searchParams.get("price_max"),
+      created_from: searchParams.get("created_from"),
+      created_to: searchParams.get("created_to"),
+      sortOrder: searchParams.get("sortOrder"),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, limit, spString]);
 
-  const page = Number(sp.page ?? 1);
-  const limit = Number(sp.limit ?? 10);
+  const [paged, setPaged] = useState<Paginated<Product> | null>(null);
+  const [cats, setCats] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  console.log('render lại')
-  // Map Next URL -> NestJS query
-  const query = buildQS({
-    page,
-    limit,
-    q: sp.q,
-    category: sp.category,
-    brand: sp.brand,
-    is_published: sp.is_published,
-    price_min: sp.price_min,
-    price_max: sp.price_max,
-    created_from: sp.created_from,
-    created_to: sp.created_to,
-    sortOrder: sp.sortOrder,
-  });
+  useEffect(() => {
+    let alive = true;
 
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
 
-  async function fetchJSON<T>(path: string): Promise<T> {
-    const res = await fetch(`${BASE_URL}${path}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Failed ${path}: ${res.status}`);
-    return res.json();
-  }
+        const [prodRes, catRes, brandRes] = await Promise.all([
+          api.get<ListResponse<Product>>(`/products?${query}`),
+          api
+            .get<ListResponse<Category>>(`/categories?limit=999&page=1`)
+            .catch(() => ({ data: { data: { data: [] } } as any })),
+          api
+            .get<ListResponse<{ id: number; name: string }>>(`/brands?limit=999&page=1`)
+            .catch(() => ({ data: { data: { data: [] } } as any })),
+        ]);
 
+        if (!alive) return;
 
-  // products
-  const prodRes = await fetchJSON<ListResponse<Product>>(`/products?${query}`);
-  console.log(prodRes)
-  const paged = prodRes.data as Paginated<Product>;
- 
+        setPaged(prodRes.data.data as Paginated<Product>);
 
+        const catPaged = catRes.data?.data as any;
+        setCats(catPaged?.data ?? []);
 
-  // categories + brands (adjust the endpoints to your NestJS routes)
-  const [cats, brands] = await Promise.all([
-    fetchJSON<ListResponse<Category>>(`/categories?limit=999&page=1`).catch(() => ({ data: { data: [] } } as any)),
-    fetchJSON<ListResponse<{ id: number; name: string }>>(`/brands?limit=999&page=1`).catch(() => ({ data: { data: [] } } as any)),
-  ]);
+        const brandPaged = brandRes.data?.data as any;
+        setBrands(brandPaged?.data ?? []);
+      } catch (e: any) {
+        if (!alive) return;
+        setError(e?.response?.data?.message ?? e?.message ?? "Fetch failed");
+        setPaged(null);
+      } finally {
+        if (!alive) return;
+        setLoading(false);
+      }
+    }
 
+    load();
+    return () => {
+      alive = false;
+    };
+  }, [query]);
+
+  if (loading) return <div className="container mx-auto">Loading...</div>;
+  if (error) return <div className="container mx-auto text-red-500">{error}</div>;
+  if (!paged) return <div className="container mx-auto">No data</div>;
 
   return (
     <div className="container mx-auto">
       <h1 className="text-3xl font-bold mb-6">Danh sách sản phẩm</h1>
-      <ProductDataTable
-        columns={columns}
-        data={paged.data}
-        pageCount={paged.totalPages}
-      />
+
+      {/* nếu ProductDataTable có filter UI, bạn có thể truyền cats/brands vào */}
+      {/* <ProductDataTable categories={cats} brands={brands} ... /> */}
+
+      <ProductDataTable columns={columns} data={paged.data} pageCount={paged.totalPages} />
     </div>
   );
 }

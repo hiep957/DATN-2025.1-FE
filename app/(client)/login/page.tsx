@@ -45,7 +45,13 @@ const LoginPage = () => {
         console.log(values)
         setLoading(true)
         try {
-            const data = await loginUser(values.email, values.password)
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(values),
+                credentials: "include" // Gửi cookie cùng request
+            })
+            const data = await res.json()
             console.log('Dữ liệu phản hồi từ server:', data)
             setAccessToken(data.accessToken)
             setUser({

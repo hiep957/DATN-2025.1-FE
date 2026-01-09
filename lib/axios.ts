@@ -4,11 +4,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
 
-export const BASE_URL = "/api-proxy"; // Thay đổi thành URL backend của bạn
+export const BASE_URL = "https://8a61d744ae59.ngrok-free.app"; // Thay đổi thành URL backend của bạn
 
 // Instance chính cho app
 export const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: "https://8a61d744ae59.ngrok-free.app",
   headers: {
     "ngrok-skip-browser-warning": "true",
     "Accept": "application/json",
@@ -19,7 +19,7 @@ export const api = axios.create({
 
 // Instance riêng chỉ để refresh, KHÔNG gắn interceptor để tránh vòng lặp
 const refreshApi = axios.create({
-  baseURL: BASE_URL,
+  baseURL: "https://8a61d744ae59.ngrok-free.app",
   withCredentials: true,
   timeout: 10000,
 });
