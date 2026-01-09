@@ -16,14 +16,6 @@ const nextConfig: NextConfig = {
     ]
 
   },
-  rewrites: async () => {
-    return [
-      {
-        source: '/api-proxy/:path*',
-        destination: 'https://8bf71b615de0.ngrok-free.app/:path*' // Thay đổi thành URL backend của bạn
-      }
-    ]
-  },
   reactStrictMode: false
 };
 
