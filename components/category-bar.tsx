@@ -20,11 +20,6 @@ import { useRouter } from "next/navigation"
 import api from "@/lib/axios"
 
 import { BASE_URL } from "@/lib/axios"
-
-
-
-
-
 export function CategoryBar() {
     const isMobile = useIsMobile()
     const router = useRouter();
