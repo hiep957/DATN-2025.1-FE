@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  
   /* config options here */
   images: {
     remotePatterns: [
@@ -11,6 +12,15 @@ const nextConfig: NextConfig = {
       {
         protocol: 'http',
         hostname: '**',  // chấp nhận mọi domain HTTP
+      }
+    ]
+
+  },
+  rewrites: async () => {
+    return [
+      {
+        source: '/api-proxy/:path*',
+        destination: 'https://8bf71b615de0.ngrok-free.app/:path*' // Thay đổi thành URL backend của bạn
       }
     ]
   },

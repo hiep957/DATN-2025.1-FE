@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
     const refreshToken = request.cookies.get('refreshToken')?.value; // Tên cookie của bạn
     const { pathname } = request.nextUrl;
-
+    console.log('Middleware checking path:', pathname, 'with refreshToken:', !!refreshToken);
     // Danh sách các trang admin
     const adminRoutes = ['/admin', '/dashboard'];
 
