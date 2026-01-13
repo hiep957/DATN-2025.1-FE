@@ -23,15 +23,16 @@ import { useCartStore } from "@/store/useCartStore";
 export function MenuProfile({ avatarUrl }: { avatarUrl?: string }) {
     const router = useRouter();
     const logout = useAuthStore((state) => state.logout);
-      const handleLogout = async () => {
+    const handleLogout = async () => {
         const res = await logoutUser();
+        console.log("Response logout:", res);
         if (res.statusCode === 201) {
-          logout();
-          useCartStore.getState().setCart([]); // Clear cart on logout
-          toast.success(res.messages || "Đăng xuất thành công");
-          router.push('/');
+            logout();
+            useCartStore.getState().setCart([]); // Clear cart on logout
+            toast.success(res.messages || "Đăng xuất thành công");
+            router.push('/');
         }
-      }
+    }
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>

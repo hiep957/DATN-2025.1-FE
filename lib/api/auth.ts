@@ -51,6 +51,7 @@ export async function registerUser(username: string, email: string,  password: s
 
 export const logoutUser = async (): Promise<any> => {
   const res = await api.post('/user/logout', {}, { withCredentials: true });
+  console.log("Logout response:", res);
   return res.data;
 }
 
