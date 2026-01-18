@@ -25,7 +25,7 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === "user";
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [products, setProducts] = useState<CarouselProduct[]>([]);
@@ -33,16 +33,16 @@ export function ChatMessage({ message }: ChatMessageProps) {
   // 1. Dùng useMemo để lấy mảng các ID (Array<string>)
   const productIds = useMemo(() => {
     if (isUser || !message.content) return [];
-    
+
     // Regex với flag 'g' (global) để tìm tất cả các match
     const regex = /http:\/\/localhost:8000\/(\d+)/g;
-    
+
     // matchAll trả về iterator, convert sang array
     const matches = [...message.content.matchAll(regex)];
-    
+
     // Lấy group 1 (là các con số ID) và loại bỏ trùng lặp (Set)
     const ids = matches.map(m => m[1]);
-    return Array.from(new Set(ids)); 
+    return Array.from(new Set(ids));
   }, [message.content, isUser]);
 
   const handleViewImages = async () => {
@@ -62,8 +62,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
       setIsLoading(true);
 
       // 2. Dùng Promise.all để fetch tất cả các sản phẩm cùng lúc
-      const fetchPromises = productIds.map(id => 
-        fetch(`${BASE_URL}/products/${id}`).then(res => res.json())
+      const fetchPromises = productIds.map(id =>
+        fetch(`${BASE_URL}/products/${id}`, {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        }).then(res => res.json())
       );
 
       const responses = await Promise.all(fetchPromises);
@@ -79,7 +83,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
         // Lấy ảnh đầu tiên trong mảng images
         const firstImage = item.images && item.images.length > 0 ? item.images[0].url : "";
-
+        console.log("Fetched product:", item);
         return {
           id: item.id,
           name: item.name,

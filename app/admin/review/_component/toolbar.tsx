@@ -72,7 +72,7 @@ export default function Toolbar({ total }: { total?: number }) {
                         <Select value={status} onValueChange={(v) => set({ status: v === "all" ? undefined : v })}>
                             <SelectTrigger><SelectValue placeholder="Trạng thái đánh giá" /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" >Tất cả trạng thái</SelectItem>
+                                <SelectItem value="all" >Trạng thái đánh giá</SelectItem>
                                 {reviewStatuses.map((c) => (
                                     <SelectItem key={c.value} value={c.value}>
                                         <div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export default function Toolbar({ total }: { total?: number }) {
                         <Select value={rating} onValueChange={(v) => set({ rating: v === "all" ? undefined : v })}>
                             <SelectTrigger><SelectValue placeholder="Đánh giá theo số sao" /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" >Tất cả</SelectItem>
+                                <SelectItem value="all" >Đánh giá theo số sao</SelectItem>
                                 {ratingFilters.map((c) => (
                                     <SelectItem key={c.value} value={String(c.value)}>
                                         <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export default function Toolbar({ total }: { total?: number }) {
                             <Select value={sortBy} onValueChange={(v) => set({ sortBy: v === "default" ? undefined : v })}>
                                 <SelectTrigger><SelectValue placeholder="Sắp xếp theo" /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="default" >Mặc định</SelectItem>
+                                    <SelectItem value="default" >Sắp xếp theo</SelectItem>
                                     {sortOptions.map((c) => (
                                         <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                                     ))}
@@ -139,7 +139,7 @@ export default function Toolbar({ total }: { total?: number }) {
                             <Select value={sortOrder} onValueChange={(v) => set({ sortOrder: v === "default" ? undefined : v })}>
                                 <SelectTrigger><SelectValue placeholder="Thứ tự sắp xếp" /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="default" >Mặc định</SelectItem>
+                                    <SelectItem value="default" >Thứ tự sắp xếp</SelectItem>
                                     <SelectItem value="ASC">Tăng dần</SelectItem>
                                     <SelectItem value="DESC">Giảm dần</SelectItem>
                                 </SelectContent>

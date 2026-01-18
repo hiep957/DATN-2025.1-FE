@@ -20,7 +20,7 @@ export default function RootLayout({
             <CategoryBar />
             <main className="md:mx-32 px-4 py-2 pb-20 md:pb-0">{children}</main>
             <MobileNav />
-            {/* <ChatWidget /> */}
+            <ChatWidget />
             <Footer />
         </>
     );

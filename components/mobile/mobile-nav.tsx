@@ -30,7 +30,7 @@ export function MobileNav() {
   const logout = useAuthStore((state) => state.logout);
   const handleLogout = async () => {
     const res = await logoutUser();
-    if (res.statusCode === 201) {
+    if (res.statusCode === 200) {
       logout();
       setIsSheetOpen(false);
       useCartStore.getState().setCart([]);

@@ -4,11 +4,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
 
-export const BASE_URL = "https://b4d7e63a069a.ngrok-free.app"; // Thay đổi thành URL backend của bạn
+export const BASE_URL = "https://ededf0088469.ngrok-free.app"; // Thay đổi thành URL backend của bạn
 
 // Instance chính cho app
 export const api = axios.create({
-  baseURL: "https://b4d7e63a069a.ngrok-free.app",
+  baseURL: "https://ededf0088469.ngrok-free.app",
   headers: {
     "ngrok-skip-browser-warning": "true",
     "Accept": "application/json",
@@ -18,14 +18,15 @@ export const api = axios.create({
 });
 
 // Instance riêng chỉ để refresh, KHÔNG gắn interceptor để tránh vòng lặp
-const refreshApi = axios.create({
-  baseURL: "https://b4d7e63a069a.ngrok-free.app",
+export const refreshApi = axios.create({
+  // Gọi Next.js route handler (cùng domain FE) để nó dùng cookie refreshToken
+  baseURL: "",
   withCredentials: true,
-  timeout: 10000,
+  timeout: 15000,
 });
 
-// ----- REQUEST: đính token -----
-api.interceptors.request.use((config) => {
+// ===== REQUEST: gắn accessToken =====
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = useAuthStore.getState().accessToken;
   if (token) {
     config.headers = config.headers ?? {};
@@ -34,46 +35,59 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ----- RESPONSE: 401 -> refresh (chỉ 1 lần, có khóa & queue) -----
+// ===== RESPONSE: 401 -> refresh (lock + queue) =====
 let isRefreshing = false;
 let pendingQueue: Array<(token: string | null) => void> = [];
 
-function onRefreshed(token: string | null) {
+function resolveQueue(token: string | null) {
   pendingQueue.forEach((cb) => cb(token));
   pendingQueue = [];
+}
+
+// Helper: xác định endpoint nào không nên auto refresh (tránh loop)
+function isAuthBypassUrl(url?: string) {
+  const u = (url ?? "").toString();
+  return (
+    u.includes("/api/auth/refresh") ||
+    u.includes("/api/auth/logout") ||
+    u.includes("/user/refresh") || // phòng khi bạn lỡ gọi trực tiếp
+    u.includes("/user/logout")     // phòng khi bạn lỡ gọi trực tiếp
+  );
 }
 
 api.interceptors.response.use(
   (res) => res,
   async (error: AxiosError) => {
-    const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
+    const originalRequest =
+      error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
 
-    // Guard lỗi không có response (mạng/CORS)
     const status = error.response?.status;
+
+    // Network/CORS hoặc không phải 401
     if (!originalRequest || status !== 401) {
       return Promise.reject(error);
     }
 
-    // BỎ QUA: nếu là request đến endpoint refresh thì không tự refresh nữa (tránh vòng lặp)
-    const url = (originalRequest.url || "").toString();
-    if (url.includes("/user/refresh")) {
+    // Bỏ qua nếu là endpoint auth (tránh vòng lặp)
+    if (isAuthBypassUrl(originalRequest.url)) {
       return Promise.reject(error);
     }
 
-    // Tránh retry vô hạn cho request gốc
+    // Tránh retry vô hạn
     if (originalRequest._retry) {
       return Promise.reject(error);
     }
     originalRequest._retry = true;
 
-    // Nếu đang refresh rồi: chờ xong rồi retry
+    // Nếu đang refresh: xếp hàng chờ
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         pendingQueue.push((newToken) => {
           if (!newToken) return reject(error);
-          // token mới sẽ được request interceptor gắn lại, nhưng vẫn nên set header để chắc chắn
+
           originalRequest.headers = originalRequest.headers ?? {};
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
           resolve(api(originalRequest));
         });
       });
@@ -81,36 +95,45 @@ api.interceptors.response.use(
 
     // Bắt đầu refresh
     isRefreshing = true;
-    try {
-      // GỌI BẰNG refreshApi để không bị interceptor bắt lại
-      const { data } = await refreshApi.post("/user/refresh"); // nhớ dấu "/" đầu
-      console.log("Response từ /user/refresh:", data);
-      const newAccessToken = (data as any)?.data.accessToken ?? null;
 
-      // Lưu token vào store (để request interceptor gắn cho các request sau)
+    try {
+      /**
+       * QUAN TRỌNG:
+       * Refresh phải gọi Next.js route handler để dùng cookie refreshToken của domain FE
+       * Next.js sẽ gọi NestJS ở server-side
+       */
+      const { data } = await refreshApi.post("/api/auth/refresh", {});
+      // Bạn có thể trả thẳng {accessToken} từ Next route
+      const newAccessToken: string | null =
+        (data as any)?.accessToken ??
+        (data as any)?.data?.accessToken ??
+        null;
+
+      if (!newAccessToken) throw new Error("Refresh did not return accessToken");
+
+      // Lưu token vào store
       useAuthStore.getState().setAccessToken(newAccessToken);
 
-      // Đánh thức queue
-      onRefreshed(newAccessToken);
+      // Thả queue
+      resolveQueue(newAccessToken);
 
       // Retry request ban đầu
       originalRequest.headers = originalRequest.headers ?? {};
-      if (newAccessToken) {
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-      }
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
       return api(originalRequest);
     } catch (refreshErr) {
-      // Refresh fail -> logout
-      useAuthStore.getState().logout();
+      // Refresh fail => gọi logout Next để clear cookie + clear store
+      try {
+        await refreshApi.post("/api/auth/logout", {});
+      } catch { }
 
-      // Nếu đang ở client: điều hướng
+      useAuthStore.getState().logout();
+      resolveQueue(null);
+
       if (typeof window !== "undefined") {
-        // dùng replace để tránh quay lại vòng lặp
         window.location.replace("/login");
       }
 
-      // Đánh thức queue với null để các pending reject
-      onRefreshed(null);
       return Promise.reject(refreshErr);
     } finally {
       isRefreshing = false;

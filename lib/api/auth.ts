@@ -1,6 +1,6 @@
 import axios from "axios"
 import { toast } from "sonner"
-import api from "../axios"
+import api, { refreshApi } from "../axios"
 import { User } from "@/store/useAuthStore"
 import { BASE_URL } from "../axios"
 export interface LoginResponse {
@@ -50,7 +50,7 @@ export async function registerUser(username: string, email: string,  password: s
 
 
 export const logoutUser = async (): Promise<any> => {
-  const res = await api.post('/user/logout', {}, { withCredentials: true });
+  const res = await refreshApi.post('/api/auth/logout', {}, { });
   console.log("Logout response:", res);
   return res.data;
 }

@@ -22,6 +22,8 @@ import { Loader2, X } from "lucide-react";
 import { Category, Color, Size } from "@/app/admin/product/type";
 import { getCategory, getColors, getSizes } from "@/lib/api/category";
 import { ColorOption } from "@/app/admin/product/add-product/utils";
+import { AddSizeDialog } from "@/app/admin/product/add-product/_component/add-size";
+import { AddColorDialog } from "@/app/admin/product/add-product/_component/add-color";
 // --- DỮ LIỆU GIẢ (MOCK DATA) ---
 // Trong thực tế, bạn sẽ fetch dữ liệu này từ API
 
@@ -367,23 +369,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
 
 
                             {/* Specs (JSON string, sẽ transform -> object) */}
-                            <FormField
-                                control={form.control}
-                                name="specs"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Specs (JSON)</FormLabel>
-                                        <FormControl>
-                                            <Textarea
-                                                rows={5}
-                                                placeholder={`Ví dụ: {"material":"cotton","fit":"regular","care":["machine-wash","do-not-bleach"]}`}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+
                         </div>
 
                         <div className="col-span-4 border p-4 rounded-lg ">
@@ -522,11 +508,7 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
 
                                             {/* Info + xoá */}
                                             <div className="flex flex-col gap-3">
-                                                <Input
-                                                    readOnly
-                                                    value={getColorImageUrl(activeColorId)}
-                                                    placeholder="URL ảnh sẽ hiển thị ở đây"
-                                                />
+
                                                 <div className="flex gap-2">
                                                     <Button
                                                         type="button"
@@ -782,6 +764,8 @@ export default function ProductForm({ initialData, productId }: { initialData?: 
                             >
                                 Reset
                             </Button>
+                            <AddSizeDialog onSuccess={fetchData}></AddSizeDialog>
+                            <AddColorDialog onSuccess={fetchData}></AddColorDialog>
                         </div>
                     </div>
                 </form>

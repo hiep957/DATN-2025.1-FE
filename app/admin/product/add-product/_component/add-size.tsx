@@ -66,7 +66,7 @@ export function AddSizeDialog({ onSuccess }: AddSizeProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant={"default"} >Thêm size</Button>
+                <Button type="button" variant="default" >Thêm size</Button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-[425px]">

@@ -68,11 +68,11 @@ export default function Toolbar({total}: {total?: number}) {
                         <Button onClick={() => set({ q })}>Tìm</Button>
                     </div>
                     <div className="col-span-1 flex justify-end">
-                        <Label className="sr-only">Phương thức thanh toán</Label>
+                        
                         <Select value={paymentMethod} onValueChange={(v) => set({ payment_method: v === "all" ? undefined : v })}>
                             <SelectTrigger><SelectValue placeholder="Phương thức thanh toán" /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" >Tất cả phương thức</SelectItem>
+                                <SelectItem value="all" >Phương thức thanh toán</SelectItem>
                                 {paymentMethods.map((c) => (
                                     <SelectItem key={c.value} value={c.value}>
                                         <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export default function Toolbar({total}: {total?: number}) {
                         <Select value={orderStatus} onValueChange={(v) => set({ order_status: v === "all" ? undefined : v })}>
                             <SelectTrigger><SelectValue placeholder="Trạng thái đơn hàng" /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" >Tất cả trạng thái</SelectItem>
+                                <SelectItem value="all" >Trạng thái đơn hàng</SelectItem>
                                 {orderStatuses.map((c) => (
                                     <SelectItem key={c.value} value={c.value}>
                                         <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export default function Toolbar({total}: {total?: number}) {
                         <Select value={paymentStatus} onValueChange={(v) => set({ payment_status: v === "all" ? undefined : v })}>
                             <SelectTrigger><SelectValue placeholder="Trạng thái thanh toán" /></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" >Tất cả trạng thái</SelectItem>
+                                <SelectItem value="all" >Trạng thái thanh toán</SelectItem>
                                 {paymentStatuses.map((c) => (
                                     <SelectItem key={c.value} value={c.value}>
                                         <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ export default function Toolbar({total}: {total?: number}) {
                             <Select value={sortBy} onValueChange={(v) => set({ sortBy: v === "default" ? undefined : v })}>
                                 <SelectTrigger><SelectValue placeholder="Sắp xếp theo" /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="default" >Mặc định</SelectItem>
+                                    <SelectItem value="default" >Sắp xếp theo</SelectItem>
                                     {sortOptions.map((c) => (
                                         <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                                     ))}
@@ -159,7 +159,7 @@ export default function Toolbar({total}: {total?: number}) {
                             <Select value={sortOrder} onValueChange={(v) => set({ sortOrder: v === "default" ? undefined : v })}>
                                 <SelectTrigger><SelectValue placeholder="Thứ tự sắp xếp" /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="default" >Mặc định</SelectItem>
+                                    <SelectItem value="default" >Thứ tự sắp xếp</SelectItem>
                                     <SelectItem value="ASC">Tăng dần</SelectItem>
                                     <SelectItem value="DESC">Giảm dần</SelectItem>
                                 </SelectContent>

@@ -44,7 +44,7 @@ export function NavUser() {
     const handleLogout = async () => {
         console.log('logout');
         const res = await logoutUser();
-        if (res.statusCode === 201) {
+        if (res.statusCode === 200) {
             logout();
          
             router.push('/');

@@ -30,22 +30,8 @@ import { AddColorDialog } from "./_component/add-color";
 const productFormSchema = z.object({
     name: z.string().min(2, { message: "Tên sản phẩm ít nhất 2 ký tự" }).max(100, { message: "Tên sản phẩm tối đa 100 ký tự" }),
     slug: z.string().min(2, { message: "Slug ít nhất 2 ký tự" }).max(100, { message: "Slug tối đa 100 ký tự" }),
-    description: z.string().optional(),
-    categoryId: z.coerce.number({ message: "Vui lòng chọn danh mục." }),
-    brandId: z.coerce.number().optional(),
-    specs: z
-        .string()
-        .optional()
-        .refine((val) => {
-            if (!val) return true;
-            try {
-                JSON.parse(val);
-                return true;
-            } catch {
-                return false;
-            }
-        }, { message: "Specs phải là một chuỗi JSON hợp lệ." })
-        .transform((val) => (val ? JSON.parse(val) : undefined)),
+    description: z.string().min(5, { message: "Mô tả ít nhất 5 ký tự" }).max(1000, { message: "Mô tả tối đa 1000 ký tự" }),
+    categoryId: z.number().min(1, { message: "Vui lòng chọn danh mục" }),
     images: z.array(z.object({ url: z.url("URL ảnh không hợp lệ") })).min(1, { message: "Phải có ít nhất 1 ảnh." }),
     image_colors: z.record(
         z.string(),
@@ -93,8 +79,6 @@ export default function AddProductPage() {
             slug: "",
             description: "",
             categoryId: 0,
-            brandId: undefined,
-            specs: undefined,
             images: [],
             image_colors: {},          // ⬅️ thêm
             variants: [{ price: 0, compare_at_price: 0, quantity: 0, colorId: 0, sizeId: 0 }],
