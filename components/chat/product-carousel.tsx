@@ -40,7 +40,7 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
                         </div>
 
                         <a
-                            href={`http://localhost:8000/${product.id}`}
+                            href={`https://datn-2025-1-fe.vercel.app/${product.id}`}
                             target="_blank"
                             className="flex items-center justify-center w-full py-1.5 bg-slate-900 text-white rounded text-[10px] hover:bg-slate-800"
                         >
