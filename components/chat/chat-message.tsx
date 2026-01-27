@@ -35,7 +35,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
     if (isUser || !message.content) return [];
 
     // Regex với flag 'g' (global) để tìm tất cả các match
-    const regex = /http:\/\/localhost:8000\/(\d+)/g;
+    //https://datn-2025-1-fe.vercel.app/
+    const regex = /https:\/\/datn-2025-1-fe.vercel.app\/(\d+)/g;
 
     // matchAll trả về iterator, convert sang array
     const matches = [...message.content.matchAll(regex)];
