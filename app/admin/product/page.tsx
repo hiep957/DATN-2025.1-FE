@@ -43,8 +43,6 @@ export default function ProductsPage() {
   }, [page, limit, spString]);
 
   const [paged, setPaged] = useState<Paginated<Product> | null>(null);
-  const [cats, setCats] = useState<Category[]>([]);
-  const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,25 +54,14 @@ export default function ProductsPage() {
         setLoading(true);
         setError(null);
 
-        const [prodRes, catRes, brandRes] = await Promise.all([
+        const [prodRes] = await Promise.all([
           api.get<ListResponse<Product>>(`/products?${query}`),
-          api
-            .get<ListResponse<Category>>(`/categories?limit=999&page=1`)
-            .catch(() => ({ data: { data: { data: [] } } as any })),
-          api
-            .get<ListResponse<{ id: number; name: string }>>(`/brands?limit=999&page=1`)
-            .catch(() => ({ data: { data: { data: [] } } as any })),
+
         ]);
 
         if (!alive) return;
 
         setPaged(prodRes.data.data as Paginated<Product>);
-
-        const catPaged = catRes.data?.data as any;
-        setCats(catPaged?.data ?? []);
-
-        const brandPaged = brandRes.data?.data as any;
-        setBrands(brandPaged?.data ?? []);
       } catch (e: any) {
         if (!alive) return;
         setError(e?.response?.data?.message ?? e?.message ?? "Fetch failed");

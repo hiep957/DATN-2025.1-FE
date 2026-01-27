@@ -153,29 +153,7 @@ function Toolbar({ categories }: { categories: Category[] | null }) {
                         </SelectContent>
                     </Select>
                 </div>
-
-
-                <div className="flex items-center gap-2">
-                    <Label htmlFor="pub">Hiển thị</Label>
-                    <Switch id="pub" checked={(searchParams.get("is_published") ?? "") === "true"}
-                        onCheckedChange={(ck) => set({ is_published: ck ? true : undefined })} />
-                </div>
-            </div>
-
-
-            <div className="md:col-span-1 flex">
-                <Input className="mr-2" placeholder="Giá từ" inputMode="numeric" value={min} onChange={(e) => setMin(e.target.value)}
-                    onBlur={() => set({ price_min: min || undefined })} />
-
-                <Input placeholder="đến" inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value)}
-                    onBlur={() => set({ price_max: max || undefined })} />
-                {/* <Input type="date" defaultValue={searchParams.get("created_from") ?? ""}
-                    onBlur={(e) => set({ created_from: e.target.value || undefined })} />
-                <Input type="date" defaultValue={searchParams.get("created_to") ?? ""}
-                    onBlur={(e) => set({ created_to: e.target.value || undefined })} /> */}
-            </div>
-            <div className="md:col-span-1 flex justify-between gap-2">
-                <Select defaultValue={searchParams.get("sortOrder") ?? "-created"} onValueChange={(v) => set({ sortOrder: v || undefined })}>
+<Select defaultValue={searchParams.get("sortOrder") ?? "-created"} onValueChange={(v) => set({ sortOrder: v || undefined })}>
                     <SelectTrigger><SelectValue placeholder="Sắp xếp" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="DESC">Mới nhất</SelectItem>
@@ -191,8 +169,9 @@ function Toolbar({ categories }: { categories: Category[] | null }) {
                 </Select>
 
                 <Button variant="outline" onClick={resetFilters}>Đặt lại</Button>
-            </div>
 
+                
+            </div>
         </div>
     );
 }
@@ -217,6 +196,7 @@ export function ProductDataTable<TData extends Product, TValue>({ columns, data,
     return (
         <div className="overflow-x-auto">
             <Toolbar categories={categories} />
+           
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
