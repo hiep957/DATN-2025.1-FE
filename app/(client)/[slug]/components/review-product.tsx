@@ -73,7 +73,7 @@ export default function ReviewProduct({ productId }: ReviewProductProps) {
 
                             <div className="flex flex-col justify-between">
                                 <p className="font-medium">{review.user.username}</p>
-                                <p className="text-muted-foreground text-sm">Đã mua một sản phẩm</p>
+                                <p className="text-muted-foreground text-sm">Đã mua sản phẩm</p>
                             </div>
                         </div>
 

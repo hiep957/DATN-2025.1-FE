@@ -61,7 +61,7 @@ export default function ListReview({ reviews, page, totalPages }: Props) {
 
                                 <div className="flex flex-col justify-between">
                                     <p className="font-medium">{review.user.username}</p>
-                                    <p className="text-muted-foreground text-sm">Mua cái gì</p>
+                                    <p className="text-muted-foreground text-sm">Đã mua sản phẩm </p>
                                 </div>
                             </div>
                             <div className="ml-auto flex  ">
