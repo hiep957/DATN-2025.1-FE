@@ -12,6 +12,7 @@ import {
   Label,
 } from "recharts";
 import { BASE_URL } from "@/lib/axios";
+import { useAuthStore } from "@/store/useAuthStore";
 
 // --- Types ---
 type OrderStatusCount = {
@@ -72,20 +73,24 @@ export default function DashboardPieRow() {
   const [orderStatusData, setOrderStatusData] = useState<OrderStatusCount[]>([]);
   const [categoryData, setCategoryData] = useState<CategoryProductCount[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const { accessToken } = useAuthStore();  // 1. Fetch dữ liệu từ API Backend
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [statusRes, categoryRes] = await Promise.all([
-          fetch(`${BASE_URL}/dashboard/orders/status-count`,{
-            headers:{
+          fetch(`${BASE_URL}/dashboard/orders/status-count`, {
+            headers: {
               "ngrok-skip-browser-warning": "true",
-            }
+              authorization: `Bearer ${accessToken}`,
+            },
+            credentials: 'include',
           }),
-          fetch(`${BASE_URL}/dashboard/categories/product-counts`,{
-            headers:{
+          fetch(`${BASE_URL}/dashboard/categories/product-counts`, {
+            headers: {
               "ngrok-skip-browser-warning": "true",
-            }
+              authorization: `Bearer ${accessToken}`,
+            },
+            credentials: 'include',
           }),
         ]);
 
@@ -126,7 +131,7 @@ export default function DashboardPieRow() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-      
+
       {/* --- CHART 1: TRẠNG THÁI ĐƠN HÀNG (DONUT) --- */}
       <Card className="flex flex-col">
         <CardHeader className="items-center pb-0">
@@ -192,9 +197,9 @@ export default function DashboardPieRow() {
                     />
                   </Pie>
                   <Tooltip content={<CustomTooltip unit="đơn" />} />
-                  <Legend 
-                    verticalAlign="bottom" 
-                    height={36} 
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
                     iconType="circle"
                     formatter={(value) => <span className="text-sm text-muted-foreground ml-1">{value}</span>}
                   />
@@ -240,19 +245,19 @@ export default function DashboardPieRow() {
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip unit="SP" />} />
-                  <Legend 
-                    layout="vertical" 
-                    verticalAlign="middle" 
+                  <Legend
+                    layout="vertical"
+                    verticalAlign="middle"
                     align="right"
                     iconType="circle"
                     formatter={(value, entry: any) => {
-                        // Hiển thị tên + số lượng ở legend cho rõ
-                        const { payload } = entry;
-                        return (
-                            <span className="text-sm text-muted-foreground ml-2">
-                                {value} <span className="text-xs opacity-70">({payload.productCount})</span>
-                            </span>
-                        )
+                      // Hiển thị tên + số lượng ở legend cho rõ
+                      const { payload } = entry;
+                      return (
+                        <span className="text-sm text-muted-foreground ml-2">
+                          {value} <span className="text-xs opacity-70">({payload.productCount})</span>
+                        </span>
+                      )
                     }}
                   />
                 </PieChart>

@@ -4,11 +4,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
 
-export const BASE_URL = "https://ededf0088469.ngrok-free.app"; // Thay đổi thành URL backend của bạn
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL // Thay đổi thành URL backend của bạn
 
 // Instance chính cho app
 export const api = axios.create({
-  baseURL: "https://ededf0088469.ngrok-free.app",
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
     "ngrok-skip-browser-warning": "true",
     "Accept": "application/json",

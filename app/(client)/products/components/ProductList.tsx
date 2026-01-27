@@ -15,6 +15,7 @@ export type ProductCardProps = {
     slug?: string;
     id?: number;
     brandName?: string;
+    totalSold: number;
 };
 
 export const ProductList = ({ data }: ProductListProps) => {

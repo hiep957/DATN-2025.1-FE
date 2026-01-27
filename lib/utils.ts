@@ -69,6 +69,12 @@ export function transformProductToCard(p: Product): ProductCardProps {
         p.variants && p.variants.length
             ? Math.min(...p.variants.map((v) => toNumber(v.price)))
             : 0;
+    
+    //Lấy tổng số lượng đã bán từ variants
+    let totalSold = 0;
+    if (p.variants && p.variants.length > 0) {
+        totalSold = p.variants.reduce((acc, variant) => acc + (variant.sold || 0), 0);
+    }
 
     return {
         id: p.id,
@@ -78,6 +84,7 @@ export function transformProductToCard(p: Product): ProductCardProps {
         price,
         imageColor,
         imageUrl,
+        totalSold,
     };
 }
 

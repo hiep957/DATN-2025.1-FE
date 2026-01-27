@@ -17,7 +17,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { changeUserPassword, logoutUser } from "@/lib/api/auth";
-
+import { Lock } from "lucide-react";
 const passwordSchema = z.object({
     oldPassword: z.string().min(6, "Mật khẩu cũ phải có ít nhất 6 ký tự"),
     newPassword: z.string().min(6, "Mật khẩu mới phải có ít nhất 6 ký tự"),
@@ -60,7 +60,10 @@ export default function ChangePassword() {
     return (
         <Card className="shadow-lg h-[calc(60vh-5rem)]">
             <CardHeader className="pb-0">
-                <CardTitle className="text-xl md:text-2xl">Thay đổi mật khẩu</CardTitle>
+                <CardTitle className="text-xl md:text-2xl flex items-center gap-2">
+                    <Lock className="w-6 h-6 text-primary" />
+                    Thay đổi mật khẩu
+                </CardTitle>
             </CardHeader>
             <CardContent>
                 <Form {...form}>

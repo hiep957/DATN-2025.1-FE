@@ -52,7 +52,7 @@ export default function ReviewProduct({ productId }: ReviewProductProps) {
 
     return (
         <div className="space-y-6 ">
-            <div>
+            <div className="mt-2">
                
                 <AddReviewProduct productId={productId} />
             </div>

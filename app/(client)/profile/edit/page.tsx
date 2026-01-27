@@ -21,9 +21,9 @@ import {
 import { updateUserProfile } from "@/lib/api/auth";
 import { uploadMultipleFilesApi, uploadSingleFileApi } from "@/lib/upload-image/upload";
 import { cn } from "@/lib/utils";
-import { useAuthStore, User } from "@/store/useAuthStore";
+import { useAuthStore } from "@/store/useAuthStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, Loader2, X } from "lucide-react";
+import { Camera, Loader2, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -147,8 +147,12 @@ export default function EditProfile() {
     return (
         <Card className="shadow-lg ">
             <CardHeader className="pb-0">
-                <CardTitle className="text-xl md:text-2xl">Thông tin cá nhân</CardTitle>
+                <CardTitle className="text-xl md:text-2xl flex items-center gap-2">
+                    <User className="w-6 h-6 text-primary" />
+                    Thông tin cá nhân
+                </CardTitle>
             </CardHeader>
+
 
             <CardContent className="pt-4">
 
@@ -171,7 +175,7 @@ export default function EditProfile() {
                                     className="h-28 w-28 md:h-32 md:w-32 rounded-full object-cover ring-2 ring-border relative"
                                 />
                             )}
-                      
+
 
                         <Input
                             type="file"
@@ -179,7 +183,7 @@ export default function EditProfile() {
                             onChange={handleImageAvatar}
                             className="absolute w-28 h-28  md:h-32 md:w-32 rounded-full opacity-0 cursor-pointer"
                         />
-                       
+
                     </div>
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}

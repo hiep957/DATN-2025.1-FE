@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { BASE_URL } from "@/lib/axios"
+import { useAuthStore } from "@/store/useAuthStore"
 export const description = "Biểu đồ doanh thu tương tác"
 
 // Định nghĩa kiểu dữ liệu trả về từ API
@@ -51,15 +52,16 @@ export function RevenueChart() {
   const [timeRange, setTimeRange] = React.useState("7d")
   const [apiData, setApiData] = React.useState<ApiResponse | null>(null)
   const [loading, setLoading] = React.useState(true)
-
-  // 1. Fetch dữ liệu từ API Backend
+  const { accessToken } = useAuthStore();  // 1. Fetch dữ liệu từ API Backend
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/dashboard/revenue/all`,{
-          headers:{
+        const response = await fetch(`${BASE_URL}/dashboard/revenue/all`, {
+          headers: {
             "ngrok-skip-browser-warning": "true",
-          }
+            authorization: `Bearer ${accessToken}`,
+          },
+          credentials: 'include'
         })
         const json = await response.json()
         if (json.statusCode === 200) {

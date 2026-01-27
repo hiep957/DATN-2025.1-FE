@@ -7,6 +7,7 @@ import { OrderStatusSelect } from "./order-status";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PaymentStatusSelect } from "./payment-status";
 
 export function getPaymentStatus(status: string) {
     return paymentStatuses.find((s) => s.value === status);
@@ -71,21 +72,22 @@ export const getColumns = (onOpenDetail: (order: Order) => void): ColumnDef<Orde
     {
         accessorKey: "payment_status",
         header: "Trạng thái thanh toán",
-        cell: ({ row }) => {
-            const status = getPaymentStatus(row.original.payment_status);
-            if (!status) return null;
+        cell: ({ row }) => (
+            // const status = getPaymentStatus(row.original.payment_status);
+            // if (!status) return null;
 
-            return (
-                <span
-                    className="px-2 py-1 rounded-2xl text-white text-xs"
-                    style={{
-                        backgroundColor: status.color
-                    }}
-                >
-                    {status.label}
-                </span >
-            );
-        }
+            // return (
+            //     <span
+            //         className="px-2 py-1 rounded-2xl text-white text-xs"
+            //         style={{
+            //             backgroundColor: status.color
+            //         }}
+            //     >
+            //         {status.label}
+            //     </span >
+            // );
+            <PaymentStatusSelect orderId={row.original.id} initialStatus={row.original.payment_status} />
+        )
     },
     {
         accessorKey: "payment_method",

@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 
 export function ProductCard({ product }: { product: ProductCardProps }) {
     const router = useRouter();
+    
     const [selectedColorId, setSelectedColorId] = React.useState<number | null>(
         null
     );
@@ -62,39 +63,45 @@ export function ProductCard({ product }: { product: ProductCardProps }) {
                 </div>
 
                 {/* Swatches màu */}
-                <div className="mt-3 flex flex-wrap gap-2">
-                    {product.imageColor.map((c) => {
-                        const isActive = selectedColorId === c.id;
-                        return (
+                <div className="flex w-full flex-col md:flex-row md:justify-between">
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        {product.imageColor.map((c) => {
+                            const isActive = selectedColorId === c.id;
+                            return (
+                                <button
+                                    key={c.id}
+                                    onClick={() => handlePickColor(c.id)}
+                                    aria-pressed={isActive}
+                                    title={c.code}
+                                    className={[
+                                        "h-7 w-7 shrink-0 rounded-full border",
+                                        // viền cho màu trắng dễ nhìn
+                                        c.code?.toLowerCase() === "#ffffff" ? "border-gray-300" : "border-transparent",
+                                        "transition",
+                                        isActive
+                                            ? "ring-2 ring-offset-2 ring-black/80"
+                                            : "hover:ring-2 hover:ring-offset-2 hover:ring-black/40",
+                                    ].join(" ")}
+                                    style={{ backgroundColor: c.code }}
+                                />
+                            );
+                        })}
+                        {/* Nút 'Bỏ chọn' (quay lại ảnh mặc định) */}
+                        {selectedColorId !== null ? (
                             <button
-                                key={c.id}
-                                onClick={() => handlePickColor(c.id)}
-                                aria-pressed={isActive}
-                                title={c.code}
-                                className={[
-                                    "h-7 w-7 shrink-0 rounded-full border",
-                                    // viền cho màu trắng dễ nhìn
-                                    c.code?.toLowerCase() === "#ffffff" ? "border-gray-300" : "border-transparent",
-                                    "transition",
-                                    isActive
-                                        ? "ring-2 ring-offset-2 ring-black/80"
-                                        : "hover:ring-2 hover:ring-offset-2 hover:ring-black/40",
-                                ].join(" ")}
-                                style={{ backgroundColor: c.code }}
-                            />
-                        );
-                    })}
-                    {/* Nút 'Bỏ chọn' (quay lại ảnh mặc định) */}
-                    {selectedColorId !== null ? (
-                        <button
-                            onClick={() => setSelectedColorId(null)}
-                            className="ml-1 rounded-full border px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
-                            title="Hiện ảnh mặc định"
-                        >
-                            Bỏ chọn
-                        </button>
-                    ) : null}
+                                onClick={() => setSelectedColorId(null)}
+                                className="ml-1 rounded-full border px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
+                                title="Hiện ảnh mặc định"
+                            >
+                                Bỏ chọn
+                            </button>
+                        ) : null}
+                    </div>
+                    <div className="flex justify-start md:justify-end mt-3 text-sm text-muted-foreground">
+                        Đã bán: <span className="ml-1">{product.totalSold}</span>
+                    </div>
                 </div>
+
             </div>
         </div>
     );

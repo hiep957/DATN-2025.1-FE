@@ -12,6 +12,11 @@ export const paymentMethods = [
         label: 'Thanh toán qua VNPay',
         color: '#3b82f6', // xanh dương
     },
+    {
+        value: 'sepay',
+        label: 'Thanh toán qua Sepay',
+        color: '#10b981', // xanh lá
+    }
 ];
 
 // 🔹 Trạng thái đơn hàng

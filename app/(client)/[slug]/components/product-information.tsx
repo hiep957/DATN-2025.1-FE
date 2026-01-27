@@ -10,6 +10,7 @@ import { AccordionItem } from "@radix-ui/react-accordion";
 import { add } from "date-fns";
 import React, { use } from "react";
 import { toast } from "sonner";
+import { SizeGuidePopup } from "./size-guide-popup";
 
 export type VariantProps = {
     id: number;
@@ -115,7 +116,7 @@ export default function ProductInformation({ product }: { product: Product }) {
                 productImage: product.images[0]?.url || '',
             })
             console.log("Phản hồi sau khi thêm vào giỏ hàng:", response);
-            if(response) {
+            if (response) {
                 toast.success("Đã thêm vào giỏ hàng!");
                 useCartStore.getState().setCart(response.data.items);
             } else {
@@ -136,7 +137,7 @@ export default function ProductInformation({ product }: { product: Product }) {
     }
 
     const handleDecreaseQuantity = () => {
-        
+
     }
 
     return (
@@ -201,8 +202,12 @@ export default function ProductInformation({ product }: { product: Product }) {
             <div className="mt-6 text-sm text-gray-600">
                 <p>Số lượng còn lại: {selectedVariant?.quantity ?? 0}</p>
             </div>
+            <div className="mt-4">
+                <SizeGuidePopup />
+            </div>
 
-           
+
+
         </div>
     )
 }

@@ -13,31 +13,23 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useMobile";
 import { Order } from "@/app/admin/order/type";
 import { getUserOrders } from "@/lib/api/payment";
 import api from "@/lib/axios";
 import { getOrderStatus } from "@/app/admin/order/_component/columns";
-// --- 1. Mock Data & Types ---
+import { CancelOrderDialog } from "../_components/AlertDialogOrder";
 
 
-// --- 2. Helper Functions ---
+
+
 const formatCurrency = (value: string) =>
     new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(Number(value));
 
-// const getStatusBadge = (orderStatus: orderStatuses) => {
-//     switch (orderStatus.) {
-//         case "pending": return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Chờ xác nhận</Badge>;
-//         case "shipping": return <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200"><Truck className="w-3 h-3 mr-1" /> Đang giao hàng</Badge>;
-//         case "delivered": return <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200"><CheckCircle2 className="w-3 h-3 mr-1" /> Giao thành công</Badge>;
-//         case "cancelled": return <Badge variant="destructive">Đã hủy</Badge>;
-//         default: return <Badge variant="outline">Không rõ</Badge>;
-//     }
-// };
 
-// --- 3. Main Component ---
+
 const formatDateTime = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleString("vi-VN", {
@@ -49,14 +41,20 @@ const formatDateTime = (isoString: string) => {
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[] | null>([]);
-    useEffect(() => {
-        const res = getUserOrders();
-        res.then((data) => {
-            console.log("Data orders", data);
-            setOrders(Object.values(data.data));
-        })
-
+    const [loading, setLoading] = useState(false);
+    const fetchOrders = useCallback(async () => {
+        try {
+            setLoading(true);
+            const res = await getUserOrders();
+            setOrders(Object.values(res.data));
+        } finally {
+            setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
     console.log("Order", orders);
     if (!orders) {
         return null;
@@ -72,7 +70,7 @@ export default function OrdersPage() {
                 : "bg-white border border-gray-200 shadow-sm rounded-xl" // Desktop: Viền xám rõ (300), bóng nhẹ, bo góc
         )}>
             <CardHeader className="">
-                <CardTitle className="text-xl md:text-2xl font-bold flex items-center gap-2">
+                <CardTitle className="text-xl md:text-2xl flex items-center gap-2">
                     <Package className="w-6 h-6 text-primary" />
                     Thông tin đơn hàng
                 </CardTitle>
@@ -160,6 +158,12 @@ export default function OrdersPage() {
                                     <Button variant="outline" size="sm" className="w-full sm:w-auto border-gray-300 hover:bg-white">
                                         Xem chi tiết
                                     </Button>
+                                    {order.payment_method === 'cod' && order.order_status === 'pending' && (
+                                        <CancelOrderDialog
+                                            orderId={order.id}
+                                            onCancelled={fetchOrders}   // ✅ cancel xong => gọi lại fetchOrders
+                                        />
+                                    )}
                                     {order.order_status === 'completed' ? (
                                         <Button size="sm" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
                                             Mua lại

@@ -1,3 +1,4 @@
+import axios from "axios";
 import api from "../axios";
 
 
@@ -45,7 +46,7 @@ export const createPaymentLink = async (orderId: string, amount: number) => {
     return response.data;
 }
 
-export const createPayment = async (type: 'COD' | 'SEPAY' | 'VNPAY', orderId: string, amount: number) => {
+export const createPayment = async (type:'SEPAY' | 'VNPAY', orderId: string, amount: number) => {
     const response = await api.post("/payment/create-payment", {
         type,
         orderId,
@@ -62,16 +63,34 @@ export const createSepayPaymentLink = async (orderId: string, amount: number) =>
     return response.data;
 }
 
+
+
 export const processCod = async (orderId: string, userId: string) => {
-    const response = await api.post("/payment/process-cod", {
-        orderId,
-        userId
-    });
+  try {
+    const response = await api.post("/payment/process-cod", { orderId, userId });
     return response.data;
-}
+  } catch (err) {
+    // Chuẩn hoá message để UI toast được đúng
+    if (axios.isAxiosError(err)) {
+      const msg =
+        (err.response?.data as any)?.message || // NestJS hay trả message
+        (err.response?.data as any)?.error ||   // vài case khác
+        err.message ||
+        "Xảy ra lỗi khi xử lý COD";
+      throw new Error(msg);
+    }
+    throw new Error("Xảy ra lỗi khi xử lý COD");
+  }
+};
+
 
 
 export const updateOrderStatus = async (orderId: string, status: string) => {
     const response = await api.patch(`/payment/update-order-status/${orderId}`, { status });
+    return response.data;
+}
+
+export const updatePaymentStatus = async (orderId: string, status: string) => {
+    const response = await api.patch(`/order/update-payment-status/${orderId}`, { status });
     return response.data;
 }

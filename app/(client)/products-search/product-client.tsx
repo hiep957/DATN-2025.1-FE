@@ -5,18 +5,18 @@ import api from "@/lib/axios";
 import axios from "axios";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import CategoryFilter from "./components/CategoryFilter";
-import FilterSheet from "./components/SheetFilter";
-import { ProductList } from "./components/ProductList";
+import FilterSheet from "../products/components/SheetFilter";
 import { Separator } from "@/components/ui/separator";
-import PaginationFilter from "./components/PaginationFilter";
+import { ProductList } from "../products/components/ProductList";
+import PaginationFilter from "../products/components/PaginationFilter";
+
 
 export interface ProductDataResponse {
     data: Product[];
     limit: number;
     page: number;
     total: number;
-    totalPages: number; 
+    totalPages: number;
 }
 
 export interface ProductListProps {
@@ -34,7 +34,7 @@ export function buildQs(obj: Record<string, any>) {
     return usp.toString();
 }
 
-export default function ProductClient({ categories, sizes, colors }: { categories: Category, sizes: Size, colors: Color }) {
+export default function ProductClient({ sizes, colors }: { sizes: Size, colors: Color }) {
     const router = useRouter();
     const pathname = usePathname();
     const sp = useSearchParams();
@@ -61,7 +61,7 @@ export default function ProductClient({ categories, sizes, colors }: { categorie
         router.replace(`${pathname}?${qs}`, { scroll: false });
     }, [router, pathname, sp]);
 
-    const [data, setData] = useState<ProductDataResponse| null>(null);
+    const [data, setData] = useState<ProductDataResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState<string | null>(null);
 
@@ -86,16 +86,12 @@ export default function ProductClient({ categories, sizes, colors }: { categorie
     }, [params]);
 
     useEffect(() => { fetchList(); }, [fetchList]);
-    if(!data) {
+    if (!data) {
         return <div>Loading...</div>;
     }
     return (
         <div>
-            <CategoryFilter
-                categories={categories}
-                value={sp.get("category") ?? ""}
-                onChange={(category) => replaceParams({ category: category || undefined })}
-            />
+
 
             <FilterSheet sizes={sizesArray} colors={colorsArray} />
 

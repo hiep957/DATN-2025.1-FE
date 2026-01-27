@@ -1,7 +1,7 @@
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { CartItemProps } from "../carts/_components/CartArea";
 import z from "zod";
@@ -17,9 +17,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createOrder, CreateOrderPayload, createPayment, createPaymentLink, createSepayPaymentLink, processCod } from "@/lib/api/payment";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
-import { getCart } from "@/lib/api/cart";
+
 import { postToCheckoutUrl } from "@/lib/utils";
-import { set } from "date-fns";
+
 type Province = { code: number; name: string };
 type Ward = { code: number; name: string };
 const formCheckouSchema = z.object({
@@ -45,7 +45,7 @@ export default function CheckoutPage() {
 function CheckoutInner() {
     const [provinces, setProvinces] = useState<Province[]>([]);
     const [wards, setWards] = useState<Ward[]>([]);
-
+    const router = useRouter();
     const [loading, setLoading] = useState<boolean>(false);
     const user = useAuthStore(state => state.user);
     const form = useForm<FormCheckoutValues>({
@@ -153,7 +153,7 @@ function CheckoutInner() {
             subtotal: totalAmount,
             shipping_fee: 0,
             discount_amount: 0,
-            grand_total: 2000,
+            grand_total: Number(totalAmount),
             // Number(totalAmount),
             orderItems: checkoutItems.map(item => ({
                 productVariantId: item.variant.id,
@@ -164,24 +164,54 @@ function CheckoutInner() {
                 link_image: item.productImage,
             }))
         }
+
+
         const res = await createOrder(payload)
         console.log("Kết quả tạo đơn hàng:", res);
         if (res.statusCode === 201) {
-            const resPayment = await createPayment(payload.payment_method.toUpperCase() as 'COD' | 'VNPAY' | 'SEPAY', res.data.id, payload.grand_total);
-            console.log("Kết quả tạo thanh toán:", resPayment);
-
-            if (resPayment.statusCode === 201) {
-                if (data.payment_method === "cod") {
-                    toast.success("Đặt hàng thành công! Vui lòng chờ nhân viên liên hệ xác nhận.");
-                    window.location.href = "/payment";
+            if (data.payment_method === "cod") {
+                try {
+                    const resCod = await processCod(res.data.id, String(user?.id));
+                    console.log("Kết quả xử lý COD:", resCod);
+                    //Chuyển trang thanh toán thành công
                     setLoading(false);
-
+                    toast.success("Đơn hàng đã được tạo thành công với phương thức COD");
+                    router.push("/payment");
                 }
-                else if (data.payment_method === "sepay") {
-                    postToCheckoutUrl(resPayment.data.checkoutUrl, resPayment.data.fields);
+                catch (error: any) {
+                    console.log("Lỗi xử lý COD:", error);
+                    toast.error(error?.message || "Xảy ra lỗi khi xử lý đơn hàng COD");
+                }
+                finally {
                     setLoading(false);
                 }
+                // const resCod = await processCod({ orderId: res.data.id, userId: String(user?.id) });
+                // console.log("Kết quả xử lý COD:", resCod);
+            } else if (data.payment_method === "vnpay" || data.payment_method === "sepay") {
+                try {
+                    const resPayment = await createPayment(payload.payment_method.toUpperCase() as | 'VNPAY' | 'SEPAY', res.data.id, payload.grand_total);
+                    console.log("Kết quả tạo thanh toán:", resPayment);
+
+                    if (resPayment.statusCode === 201) {
+                        if (data.payment_method === "vnpay") {
+                            //Xử lý chuyển hướng đến VNPay
+                        }
+                        else if (data.payment_method === "sepay") {
+                            postToCheckoutUrl(resPayment.data.checkoutUrl, resPayment.data.fields);
+                            setLoading(false);
+                        }
+                    }
+                } catch (error: any) {
+                    setLoading(false);
+                    toast.error(error?.message || "Xảy ra lỗi khi tạo thanh toán");
+                }
+
             }
+            else {
+                setLoading(false);
+                toast.error("Phương thức thanh toán không hợp lệ")
+            }
+
         }
         else {
             setLoading(false);

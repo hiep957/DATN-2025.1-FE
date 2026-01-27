@@ -76,7 +76,7 @@ export default async function ProductDetailPage({
                 {
 
                 }
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 md:mt-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 md:mt-4 mb-2">
                     {filteredProductCards.map((product) => (
                         <ProductCard key={product.id} product={product} />
                     ))}
