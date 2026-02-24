@@ -30,11 +30,15 @@ Phía Server bao gồm 2 phần: Backend và Server
   <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
 </figure>
 
-Sơ đồ các module ở backend
-<figure align="center">
+<h3 align="center">Sơ đồ các module ở backend</h3>
+
+<p align="center">
   <img src="./public/module-backend.png" width="700"/>
-  <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
-</figure>
+</p>
+
+<p align="center">
+  <sub><b>Hình 3.</b> Kiến trúc hệ thống</sub>
+</p>
 
 
 Sơ đồ class quá trình thanh toán
