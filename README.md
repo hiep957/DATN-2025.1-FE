@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Đồ án tốt nghiệp 2025.1
 
-## Getting Started
+## Các chức năng chính
+<figure align="center">
+  <img src="./public/usecase.png" width="700"/>
+  <figcaption><b>Hình 1.</b>Chức năng tổng quan của hệ thống</figcaption>
+</figure>
 
-First, run the development server:
+Quy trình nghiệp vụ mua hàng
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+<figure align="center">
+  <img src="./public/quy trình nghiệp vụ.png" width="700"/>
+  <figcaption><b>Hình 2.</b> Quy trình nghiệp vụ mua hàng</figcaption>
+</figure>
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Kiến trúc hệ thống
+<figure align="center">
+  <img src="./public/kiến trúc hệ thống.png" width="700"/>
+  <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
+</figure>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Client được xây dựng framework Next.js. Có khả năng hiển thị giao diện, gửi yêu cầu đến Server qua HTTP, nhận phản hồi và render dữ liệu cho người dùng. 
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Phía Server bao gồm 2 phần: Backend và Server
 
-## Learn More
+  Backend được xây dựng từ NestJS để tạo API cho website. Bên trong backend được chia thành các Module để thực hiện các chức năng riêng biệt như User, Product, Order, Payment,...Mỗi module bao gồm Controller, Service, Entity. Controller là nơi nhận request từ Client, kiểm tra quyền, dữ liệu đầu vào cơ bản (DTO/Validation), sau đó chuyển xử lý xuống Service. Service là nơi chứa logic nghiệp vụ chính. Entity là các lớp (class) đại diện cho các bảng trong cơ sở dữ liệu. Thay vì viết các câu lệnh SQL thủ công, hệ thống sử dụng kỹ thuật ORM ( Object-Relational Mapping) để ánh xạ các đối tượng trong code thành các bản ghi trong cơ sở dữ liệu và ngược lại. 
 
-To learn more about Next.js, take a look at the following resources:
+<figure align="center">
+  <img src="./public/Chatbot.png" width="700"/>
+  <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
+</figure>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Sơ đồ các module ở backend
+<figure align="center">
+  <img src="./public/module-backend.png" width="700"/>
+  <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
+</figure>
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+Sơ đồ class quá trình thanh toán
+<figure align="center">
+  <img src="./public/class.png" width="700"/>
+  <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
+</figure>
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Sơ đồ CSDL
+<figure align="center">
+  <img src="./public/db.png" width="700"/>
+  <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
+</figure>

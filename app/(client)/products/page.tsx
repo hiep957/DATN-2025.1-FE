@@ -38,17 +38,6 @@ export default async function ProductsPage() {
         fetchSizes(),
         fetchColors(),
     ]);
-
-    // Chuyển sizes, colors sang mảng
-
-
-    // console.log({ categories, sizes, colors });
-    // console.log("Types of fetched data:", {
-    //     categoriesType: typeof categories,
-    //     sizesType: typeof sizes,
-    //     colorsType: typeof colors,
-    // });
-
     return (
         <div className="">
             <Suspense fallback={<div className="p-6">Đang tải sản phẩm...</div>}>
