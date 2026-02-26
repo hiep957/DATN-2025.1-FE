@@ -12,22 +12,22 @@
   <img src="./public/giao diên 1.png" width="700"/>
 </figure>
 <figure align="center">
-  <img src="./public/giao diên 2.png" width="700"/>
+  <img src="./public/giao diện 2.png" width="700"/>
 </figure>
 <figure align="center">
-  <img src="./public/giao diên 3.png" width="700"/>
+  <img src="./public/giao diện 3.png" width="700"/>
 </figure>
 <figure align="center">
-  <img src="./public/giao diên 4.png" width="700"/>
+  <img src="./public/giao diện 4.png" width="700"/>
 </figure>
 <figure align="center">
-  <img src="./public/giao diên 5.png" width="700"/>
+  <img src="./public/giao diện 5.png" width="700"/>
 </figure>
 <figure align="center">
-  <img src="./public/giao diên 6.png" width="700"/>
+  <img src="./public/giao diện 6.png" width="700"/>
 </figure>
 <figure align="center">
-  <img src="./public/giao diên 7.png" width="700"/>
+  <img src="./public/giao diện 7.png" width="700"/>
 </figure>
 Quy trình nghiệp vụ mua hàng
 
