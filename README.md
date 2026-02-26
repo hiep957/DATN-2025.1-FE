@@ -6,6 +6,29 @@
   <figcaption><b>Hình 1.</b>Chức năng tổng quan của hệ thống</figcaption>
 </figure>
 
+
+## Giao diện website
+<figure align="center">
+  <img src="./public/giao diên 1.png" width="700"/>
+</figure>
+<figure align="center">
+  <img src="./public/giao diên 2.png" width="700"/>
+</figure>
+<figure align="center">
+  <img src="./public/giao diên 3.png" width="700"/>
+</figure>
+<figure align="center">
+  <img src="./public/giao diên 4.png" width="700"/>
+</figure>
+<figure align="center">
+  <img src="./public/giao diên 5.png" width="700"/>
+</figure>
+<figure align="center">
+  <img src="./public/giao diên 6.png" width="700"/>
+</figure>
+<figure align="center">
+  <img src="./public/giao diên 7.png" width="700"/>
+</figure>
 Quy trình nghiệp vụ mua hàng
 
 <figure align="center">
@@ -27,7 +50,7 @@ Phía Server bao gồm 2 phần: Backend và Server
 
 <figure align="center">
   <img src="./public/Chatbot.png" width="700"/>
-  <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
+  <figcaption><b>Hình 4.</b>Kiến trúc Chatbot RAG </figcaption>
 </figure>
 
 <h3 align="center">Sơ đồ các module ở backend</h3>
@@ -36,19 +59,14 @@ Phía Server bao gồm 2 phần: Backend và Server
   <img src="./public/module-backend.png" width="700"/>
 </p>
 
-<p align="center">
-  <sub><b>Hình 3.</b> Kiến trúc hệ thống</sub>
-</p>
 
 
 Sơ đồ class quá trình thanh toán
 <figure align="center">
   <img src="./public/class.png" width="700"/>
-  <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
 </figure>
 
 Sơ đồ CSDL
 <figure align="center">
   <img src="./public/db.png" width="700"/>
-  <figcaption><b>Hình 3.</b>Kiến trúc hệ thống </figcaption>
 </figure>
