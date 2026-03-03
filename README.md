@@ -1,9 +1,9 @@
-Đồ án tốt nghiệp 2025.1
-Xem demo tại: https://datn-2025-1-fe.vercel.app
-Tài khoản demo trang admin: https://datn-2025-1-fe.vercel.app/admin
-Tài khoản: hiepma@gmail.com
-Mật khẩu: 123456
+# Đồ án tốt nghiệp 2025.1
+Xem demo tại: https://datn-2025-1-fe.vercel.app  
 
+Tài khoản demo trang admin: https://datn-2025-1-fe.vercel.app/admin. Tài khoản: hiepma@gmail.com, mật khẩu: 123456
+
+Xem mã nguồn backend tại: https://github.com/hiep957/DATN-2025.1-BE
 ## Các chức năng chính
 <figure align="center">
   <img src="./public/usecase.png" width="700"/>
